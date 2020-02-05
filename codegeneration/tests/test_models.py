@@ -8,9 +8,13 @@ import csv
 from codegeneration.models import *
 
 class TestCodegeneration(unittest.TestCase):
-    def setUp(self):
-        global model_fields
-        global foreignkey_fields
+    def test_create_model_with_dict_of_fields(self):
+        foreignkey_fields = {
+            'fkeyfieldname':'jobboard',
+            'name':'CharField',
+            'home_page_link':'URLField',
+            'search_page_link':'URLField'
+        }
 
         model_fields = {
             'date':'DateField',
@@ -19,15 +23,6 @@ class TestCodegeneration(unittest.TestCase):
             'success':'BooleanField'
         }
 
-        foreignkey_fields = {
-            'fkeyfieldname':'jobboard',
-            'name':'CharField',
-            'home_page_link':'URLField',
-            'search_page_link':'URLField'
-        }
-
-
-    def test_create_model_with_dict_of_fields(self):
         m = DjangoModel(modelname='Scrape', djangoapp='jobsdatastore', **model_fields)
 
         self.assertEqual(m.modelname,'Scrape', 'Incorrect model name')

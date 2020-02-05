@@ -6,6 +6,7 @@ django_model_objects = {}
 foreignkeynames_models = {}
 
 def generate_models(inp, djangoapp):
+
     with open(inp) as fd:
         rdr = csv.reader(fd, delimiter=',')
         next(rdr)
@@ -43,17 +44,21 @@ def generate_models(inp, djangoapp):
 
 
 def generate_code(*djangoapps_inputfiles:tuple):
-    """Solution to apps with foreignkeys from other apps:
-        Take multiple input files in order (list of tuples)
-        of the form ('djangoappname', 'filename')
-        and build objects.
+    """Takes an arbitary number of tuples of the form ('appname', 'input file')
+    and generates appname_models.py and appname_test_models.py
+
+    Parameters
+    ----------
+    *djangoapps_inputfiles : tuple
+        Description of parameter `*djangoapps_inputfiles`.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
     """
-    """
-    global django_model_objects
-    global foreignkeynames_models
-    django_model_objects = {}
-    foreignkeynames_models = {}
-    """
+
     filepaths = {}
     appnames = []
 
@@ -90,16 +95,15 @@ def generate_code(*djangoapps_inputfiles:tuple):
                 models[helper_return_underscore_separated_fieldname(model.modelname)] = model.modelname
         helper_prepare_test_models_py(appname, models, filepaths[appname][1])
 
-    """
-    for model in django_model_objects.keys():
-        print (django_model_objects[model])
-    """
 
 if __name__ == '__main__':
     import os
-    data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '.', 'output'))
+    data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '.', 'data'))
 
     src1 = '{}/jobsdatastore.csv'.format(data_dir)
     src2 = '{}/jobsdatabucket.csv'.format(data_dir)
 
-    generate_code(('jobsdatastore', src1),('jobsdatabucket', src2))
+    jobsdatastore = ('jobsdatastore', src1)
+    jobsdatabucket = ('jobsdatabucket', src2)
+
+    generate_code(jobsdatastore,jobsdatabucket)
