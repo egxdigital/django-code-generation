@@ -1,0 +1,17 @@
+DJANGO FIELD,FIELD NAME,DATA TYPE
+models.Model,JobPost,relation
+PrimaryKey,id_job_post,primary key
+ForeignKey,scrape,key
+ForeignKey,job_title,key
+ForeignKey,job_description,key
+ForeignKey,company,key
+DateField,date_posted,date (Y-m-d)
+URLField,apply_link,string
+models.Model,JobPostListingTag,relation
+PrimaryKey,id_job_post_listing_tag,primary key
+ForeignKey,job_post,key
+ForeignKey,listing_tag,key
+models.Model,JobPostTechnology,relation
+PrimaryKey,id_job_post_technology,primary key
+ForeignKey,job_post,key
+ForeignKey,technology,key

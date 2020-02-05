@@ -1,0 +1,30 @@
+DJANGO FIELD,FIELD NAME,DATA TYPE
+models.Model,JobBoard,relation
+PrimaryKey,id_job_board,primary key
+CharField,name,string
+URLField,home_page_link,string
+URLField,search_page_link,string
+models.Model,Scrape,relation
+PrimaryKey,id_scrape,primary key
+ForeignKey,job_board,key
+DateField,date,date (Y-m-d)
+IntegerField,entries_made,integer
+DurationField,duration,duration
+BooleanField,success,boolean
+models.Model,JobTitle,relation
+PrimaryKey,id_job_title,primary key
+CharField,name,string
+models.Model,JobDescription,relation
+PrimaryKey,id_job_description,primary key
+TextField,text,string
+models.Model,Company,relation
+PrimaryKey,id_company,primary key
+CharField,name,string
+CharField,hiring_from,string
+models.Model,ListingTag,relation
+PrimaryKey,id_listing_tag,primary key
+ForeignKey,job_board,key
+CharField,name,string
+models.Model,Technology,relation
+PrimaryKey,id_technology,primary key
+CharField,name,string
