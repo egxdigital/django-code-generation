@@ -41,12 +41,11 @@ def helper_prepare_test_models_py(appname, models, dest):
         testpy.write(contents)
 
 
-def helper_return_dest_models_py_filepath(djangoapp):
+def helper_return_dest_models_py_filepath(djangoapp, dest_dir):
     """Takes Django app name and destination directory
     and returns a filepath as a string"""
     import os
-    output_dir =  os.path.abspath(os.path.join(os.path.dirname( __file__ ), '.', 'output'))
-
+    output_dir =  os.path.abspath(dest_dir)
     dest_file = '{}/{}_models.py'.format(output_dir, djangoapp)
     dest_test_file = '{}/{}_test_models.py'.format(output_dir, djangoapp)
 

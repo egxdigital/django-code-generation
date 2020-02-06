@@ -105,6 +105,8 @@ ENV/
 env.bak/
 venv.bak/
 .directory
+.deleteme
+DELETEME
 
 # Spyder project settings
 .spyderproject

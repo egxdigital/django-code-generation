@@ -27,14 +27,14 @@ class DjangoModel():
     Usage
     ----------
     create model:
-    
+
     model = DjangoModel(modelname:str, djangoapp:str, **model_fields:dict)
     model = DjangoModel(str, str2, *fields:Modelfield,...)
     model = DjangoModel(str, str2, *fields:Modelfield,..., **model_fields:dict)
-    
+
     add foreign key field to model:
     """
-    
+
     model_fields_str = {
         'models.Model':     "\n\nclass {field}(models.Model):\n",
         'PrimaryKey':       "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
@@ -153,4 +153,3 @@ class DjangoModel():
             fkeyfieldname = helper_return_underscore_separated_fieldname(model.modelname)
             self.foreignkey_names[model.modelname] = fkeyfieldname
             self.foreignkey_parent[fkeyfieldname] = model.djangoapp
-
