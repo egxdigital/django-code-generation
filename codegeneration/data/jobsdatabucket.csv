@@ -1,17 +1,23 @@
-DJANGO FIELD,FIELD NAME,DATA TYPE
-models.Model,JobPost,relation
-PrimaryKey,id_job_post,primary key
-ForeignKey,scrape,key
-ForeignKey,job_title,key
-ForeignKey,job_description,key
-ForeignKey,company,key
-DateField,date_posted,date (Y-m-d)
-URLField,apply_link,string
-models.Model,JobPostListingTag,relation
-PrimaryKey,id_job_post_listing_tag,primary key
-ForeignKey,job_post,key
-ForeignKey,listing_tag,key
-models.Model,JobPostTechnology,relation
-PrimaryKey,id_job_post_technology,primary key
-ForeignKey,job_post,key
-ForeignKey,technology,key
+DJANGO FIELD,FIELD NAME,DESCRIPTION,API ENDPOINT,DATA TYPE
+models.Model,JobPost,A job post is an advertisement for an open position.,,Entity
+UUIDField,jobpost_id,,,Primary Key
+CharField,job_title,,,String
+DateField,date_posted,,,Date
+URLField,apply_link,,,URL
+CharField,job_description,,,String
+models.Model,JobPostCompany,Companies advertise for an open position more than once and post multiple job posts for different positions.,,Entity
+UUIDField,jobpostcompany_id,,,Primary Key
+ForeignKey,job_post,,,Foreign Key
+ForeignKey,company,,,Foreign Key
+models.Model,JobPostListingTag,A job post can contain multiple listing tags and a given listing tag can appear on any number of job posts.,,Entity
+UUIDField,jobpostlistingtag_id,,,Primary Key
+ForeignKey,job_post,,,Foreign Key
+ForeignKey,listing_tag,,,Foreign Key
+models.Model,JobPostScrape,A job post can appear in multiple scrapes and scrapes pull many job posts.,,Entity
+UUIDField,jobpostscrape_id,,,Primary Key
+ForeignKey,job_post,,,Foreign Key
+ForeignKey,scrape,,,Foreign Key
+models.Model,JobPostTechnology,A job post can contain multiple technologies and a given technology can appear on any number of job posts.,,Entity
+UUIDField,jobposttechnology_id,,,Primary Key
+ForeignKey,job_post,,,Foreign Key
+ForeignKey,technology,,,Foreign Key

@@ -1,0 +1,23 @@
+DJANGO FIELD,FIELD NAME,DESCRIPTION,API ENDPOINT,DATA TYPE
+models.Model,JobBoard,A job board is a source from which job posts and other elements are obtained.,,Entity
+UUIDField,jobboard_id,The entity's key is Implemented as a UUID.,,Primary Key
+CharField,jobboard_name,,,String
+URLField,home_page,,,URL
+URLField,search_page,,,URL
+models.Model,ListingTag,A listing tag profiles a job opportunity based on whether or not it is remote-friendly.,,String
+UUIDField,listingtag_id,,,Primary Key
+CharField,listingtag_name,,,String
+models.Model,Scrape,A scrape is an automated session wherein the database is either populated or not.,,Entity
+UUIDField,scrape_id,,,Primary Key
+DateField,scrape_date,,,Date
+IntegerField,entries_scraped,,,Integer
+DurationField,scrape_duration,,,Time
+BooleanField,scrape_success,,,Boolean
+models.Model,ScrapeJobBoard,A scrape occurs regularly on a given job board over time.,,Entity
+UUIDField,scrapejobboard_id,,,Primary Key
+ForeignKey,scrape,,,Foreign Key
+ForeignKey,job_board,,,Foreign Key
+models.Model,JobBoardListingTag,A listing tag is is an idiosyncratic tag belonging to a certain job board.,,Entity
+UUIDField,jobboardlistingtag_id,,,Primary Key
+ForeignKey,job_board,,,Foreign Key
+ForeignKey,listing_tag,,,Foreign Key
