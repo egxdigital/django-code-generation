@@ -1,17 +1,41 @@
-"""Models
+"""Codegeneration
 
-Generates models.py and test_models.py given an arbitrary number of csvs.
+This module contains models for use in the codegeneration program.
 
-Usage
-    $ <placeholder>
-
-TODO
+Attributes
+----------
+model_fields_str: dict
+    Django model field type: default models.py code fragment
+test_str:dict
+    Opinionated representation of test type: 'barebones' test_models.py code fragment
 
 Author
+-----
     emilledigital@gmail.com
-
 """
 from codegeneration.helpers import *
+
+model_fields_str = {
+    'models.Model':     "\n\nclass {field}(models.Model):\n",
+    'UUIDField':       "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
+    'DateField':        "    {field} = models.DateField(auto_now=False, auto_now_add=False)\n",
+    'IntegerField':     "    {field} = models.IntegerField(null=True)\n",
+    'DurationField':    "    {field} = models.DurationField(null=True)\n",
+    'BooleanField':     "    {field} = models.BooleanField()\n",
+    'CharField':        "    {field} = models.CharField(max_length=250)\n",
+    'TextField':        "    {field} = models.TextField()",
+    'ForeignKey':       "    {field} = models.ForeignKey(\'{foreignapp}.{foreignmodel}\',on_delete=models.CASCADE,)\n",
+    'URLField':         "    {field} = models.URLField(null=True)\n",
+}
+
+test_str = {
+    'TestCase':         "\n\nclass {}TestCase(TestCase):\n",
+    'TestPrimaryKey':   "    def test_fields_{}(self):\n        pass\n\n",
+    'TestisInstance':   "    def test_is_instance(self):\n        thing = mommy.make({m})\n        self.assertTrue(isinstance(thing, {m}))\n\n",
+    'TestFields':       "    def test_fields_{field}(self):\n        {model} = {Model}()\n        <placeholder>\n        {model}.{field} = <placeholder>\n        {model}.save()\n        record = {Model}.objects.get({field}=<placeholder>)\n        self.assertEqual(record.{field}, <placeholder>)\n\n",
+    'TestForeignKey':   "    def test_fields_{field}(self):\n        {ffield} = {fModel}()\n        {ffield}.<placeholder> = <placeholder>\n        {ffield}.save()\n        <placeholder>\n        {model} = {Model}()\n        {model}.{ffield} = {ffield}\n        {model}.<placeholder> = <placeholder>\n        {model}.save()\n        record = {Model}.objects.get({field}=<placeholder>)\n        self.assertEqual(record.{field}, <placeholder>)\n\n"
+}
+
 
 class ModelField():
     def __init__(self, fieldname, djangofield):
@@ -23,39 +47,6 @@ class ModelField():
 
 
 class DjangoModel():
-    """
-    Usage
-    ----------
-    create model:
-
-    model = DjangoModel(modelname:str, djangoapp:str, **model_fields:dict)
-    model = DjangoModel(str, str2, *fields:Modelfield,...)
-    model = DjangoModel(str, str2, *fields:Modelfield,..., **model_fields:dict)
-
-    add foreign key field to model:
-    """
-
-    model_fields_str = {
-        'models.Model':     "\n\nclass {field}(models.Model):\n",
-        'PrimaryKey':       "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
-        'DateField':        "    {field} = models.DateField(auto_now=False, auto_now_add=False)\n",
-        'IntegerField':     "    {field} = models.IntegerField(null=True)\n",
-        'DurationField':    "    {field} = models.DurationField(null=True)\n",
-        'BooleanField':     "    {field} = models.BooleanField()\n",
-        'CharField':        "    {field} = models.CharField(max_length=250)\n",
-        'TextField':        "    {field} = models.TextField()",
-        'ForeignKey':       "    {field} = models.ForeignKey(\'{foreignapp}.{foreignmodel}\',on_delete=models.CASCADE,)\n",
-        'URLField':         "    {field} = models.URLField(null=True)\n",
-    }
-
-    test_str = {
-        'TestCase':         "\n\nclass {}TestCase(TestCase):\n",
-        'TestPrimaryKey':   "    def test_fields_{}(self):\n        pass\n\n",
-        'TestisInstance':   "    def test_is_instance(self):\n        thing = mommy.make({m})\n        self.assertTrue(isinstance(thing, {m}))\n\n",
-        'TestFields':       "    def test_fields_{field}(self):\n        {model} = {Model}()\n        <placeholder>\n        {model}.{field} = <placeholder>\n        {model}.save()\n        record = {Model}.objects.get({field}=<placeholder>)\n        self.assertEqual(record.{field}, <placeholder>)\n\n",
-        'TestForeignKey':   "    def test_fields_{field}(self):\n        {ffield} = {fModel}()\n        {ffield}.<placeholder> = <placeholder>\n        {ffield}.save()\n        <placeholder>\n        {model} = {Model}()\n        {model}.{ffield} = {ffield}\n        {model}.<placeholder> = <placeholder>\n        {model}.save()\n        record = {Model}.objects.get({field}=<placeholder>)\n        self.assertEqual(record.{field}, <placeholder>)\n\n"
-    }
-
     def __init__(self, modelname, djangoapp, *args, **kwargs):
         self.fields                     = kwargs
         self.modelname                  = modelname
@@ -81,9 +72,9 @@ class DjangoModel():
         """Concatenates the format string each time a field
         is added to the model
         """
-        fmodel = helper_return_foreign_key_model(fieldname)
+        fmodel = helper_return_camel_case_foreign_key_modelname(fieldname)
         fapp = self.foreignkey_parent.get(fieldname)
-        str = self.model_fields_str.get(djangofield)
+        str = model_fields_str.get(djangofield)
 
         code = str.format(
                         field=fieldname,
@@ -95,17 +86,17 @@ class DjangoModel():
 
     def add_line_to_test_models_code_fragment(self, djangofield, fieldname):
         if djangofield == 'models.Model':
-            str = self.test_str.get('TestCase')
-            str2 = self.test_str.get('TestisInstance')
+            str = test_str.get('TestCase')
+            str2 = test_str.get('TestisInstance')
             self.test_models_code_fragment += str.format(fieldname)
             self.test_models_code_fragment += str2.format(m=fieldname)
 
-        elif djangofield == 'PrimaryKey':
-            str = self.test_str.get('TestPrimaryKey')
+        elif djangofield == 'UUIDField':
+            str = test_str.get('TestPrimaryKey')
             self.test_models_code_fragment += str.format(fieldname)
 
         elif djangofield == 'ForeignKey':
-            str = self.test_str.get('TestForeignKey')
+            str = test_str.get('TestForeignKey')
             s = str.format(ffield=fieldname,
                            fModel=self.foreignkey_names.get(fieldname),
                            field=fieldname,
@@ -116,7 +107,7 @@ class DjangoModel():
 
         else:
             if self.isForeignkey:
-                str = self.test_str.get('TestForeignKey')
+                str = test_str.get('TestForeignKey')
                 s = str.format(ffield=fieldname,
                                fModel=self.foreignkey_names.get(fieldname),
                                field=fieldname,
@@ -126,7 +117,7 @@ class DjangoModel():
                 self.test_models_code_fragment += s
 
             else:
-                str = self.test_str.get('TestFields')
+                str = test_str.get('TestFields')
                 s = str.format(field=fieldname,
                                  model=self.modelname.lower(),
                                  Model=self.modelname
