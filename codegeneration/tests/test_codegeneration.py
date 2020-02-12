@@ -1,8 +1,9 @@
-"""Test Gen Models OOP
+"""Test Codegeneration
 
 Usage
     $ python3 -m unittest codegeneration.tests.test_gen_models_oop
 """
+import pprint
 import unittest
 import csv
 import os
@@ -10,132 +11,102 @@ from codegeneration.codegeneration import *
 from codegeneration.functions import *
 
 class TestCodegeneration(unittest.TestCase):
-    def test_create_model_add_fields_from_csv(self):
-        test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-        test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
+    def setUp(self):
+        self.Diff = None
+        self.test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
+        self.test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
 
-        src1 = '{}/jobsdatastore.csv'.format(test_data_dir)
-        src2 = '{}/jobsdatabucket.csv'.format(test_data_dir)
+        self.src1 = '{}/scraper.csv'.format(self.test_data_dir)
+        self.src2 = '{}/jobsdatastore.csv'.format(self.test_data_dir)
+        self.src3 = '{}/jobsdatabucket.csv'.format(self.test_data_dir)
 
-        jobsdatastore = ('jobsdatastore', src1)
-        jobsdatabucket = ('jobsdatabucket', src2)
+        self.scraper = ('scraper', self.src1)
+        self.jobsdatastore = ('jobsdatastore', self.src2)
+        self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
-        generate_code(test_output_dir, *[jobsdatastore, jobsdatabucket])
+        generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
 
-        self.assertEqual(len(django_model_objects.keys()),10,"Test data contains 10 models across two Django apps")
-        self.assertEqual(len(os.listdir(test_output_dir)),4,"Two files should be generated for each of the two test app csv's")
+    def test_create_models_add_fields_from_csv(self):
+        """Tests for the corrrect number of models and files generated"""
+
+        self.assertEqual(len(django_model_objects.keys()),13,"Test data contains 13 models across three Django apps")
+        self.assertEqual(len(os.listdir(self.test_output_dir)),6,"Six files should be generated for the three test app csv's")
 
 
-    def test_model_isForeignkey(self):
-        test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-        test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
+    def test_models_isForeignkey(self):
+        """Tests for the correct value of the model's isForeignkey attribute."""
 
-        src1 = '{}/jobsdatastore.csv'.format(test_data_dir)
-        src2 = '{}/jobsdatabucket.csv'.format(test_data_dir)
-
-        jobsdatastore = ('jobsdatastore', src1)
-        jobsdatabucket = ('jobsdatabucket', src2)
-
-        generate_code(test_output_dir, *[jobsdatastore, jobsdatabucket])
-
+        self.Diff = None
         self.assertEqual(
             [(_.modelname, _.isForeignkey) for _ in django_model_objects.values()],
             [('JobBoard', True),
-             ('Scrape', True),
-             ('JobTitle', True),
-             ('JobDescription', True),
-             ('Company', True),
              ('ListingTag', True),
+             ('Scrape', True),
+             ('ScrapeJobBoard', False),
+             ('JobBoardListingTag', False),
+             ('Company', True),
              ('Technology', True),
+             ('CompanyTechnology', False),
              ('JobPost', True),
+             ('JobPostCompany', False),
              ('JobPostListingTag', False),
+             ('JobPostScrape', False),
              ('JobPostTechnology', False)
              ],
-             "8/10 models are a foreign key in another model"
+             "6 of 13 models are a foreign key in another model across the three apps"
         )
 
+
     def test_model_isForeignkeyIn(self):
-        test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-        test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
-
-        src1 = '{}/jobsdatastore.csv'.format(test_data_dir)
-        src2 = '{}/jobsdatabucket.csv'.format(test_data_dir)
-
-        jobsdatastore = ('jobsdatastore', src1)
-        jobsdatabucket = ('jobsdatabucket', src2)
-
-        generate_code(test_output_dir, *[jobsdatastore, jobsdatabucket])
+        """Tests for the correct value of the isForeignkeyIn attribute."""
 
         self.Diff = None
         self.assertEqual(
             [(_.modelname,_.isForeignkeyIn) for _ in django_model_objects.values()],
-            [('JobBoard', ['Scrape', 'ListingTag']),
-             ('Scrape', ['JobPost']),
-             ('JobTitle', ['JobPost']),
-             ('JobDescription', ['JobPost']),
-             ('Company', ['JobPost']),
-             ('ListingTag', ['JobPostListingTag']),
-             ('Technology', ['JobPostTechnology']),
-             ('JobPost', ['JobPostListingTag', 'JobPostTechnology']),
+            [('JobBoard', ['ScrapeJobBoard', 'JobBoardListingTag']),
+             ('ListingTag', ['JobBoardListingTag', 'JobPostListingTag']),
+             ('Scrape', ['ScrapeJobBoard', 'JobPostScrape']),
+             ('ScrapeJobBoard', []),
+             ('JobBoardListingTag', []),
+             ('Company', ['CompanyTechnology', 'JobPostCompany']),
+             ('Technology', ['CompanyTechnology', 'JobPostTechnology']),
+             ('CompanyTechnology', []),
+             ('JobPost',
+              ['JobPostCompany',
+               'JobPostListingTag',
+               'JobPostScrape',
+               'JobPostTechnology']),
+             ('JobPostCompany', []),
              ('JobPostListingTag', []),
+             ('JobPostScrape', []),
              ('JobPostTechnology', [])
              ],
-            "8/10 models are foreign keys in other models"
+            "5/13 models are foreign keys in other models"
         )
 
-        #from pprint import pprint
-        #pprint ([(_.modelname,_.isForeignkeyIn) for _ in django_model_objects.values()])
 
-
-    def test_model_foreignkey_parents(self):
-        test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-        test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
-
-        src1 = '{}/jobsdatastore.csv'.format(test_data_dir)
-        src2 = '{}/jobsdatabucket.csv'.format(test_data_dir)
-
-        jobsdatastore = ('jobsdatastore', src1)
-        jobsdatabucket = ('jobsdatabucket', src2)
-
-        generate_code(test_output_dir, *[jobsdatastore, jobsdatabucket])
-
+    def test_models_foreignkeys_parents(self):
+        """Tests whether foreign keys are imported from the correct app"""
+        
         self.Diff = None
         self.assertEqual(
             [(_.modelname,_.foreignkey_parent) for _ in django_model_objects.values()],
-            [
-             ('JobBoard', {}),
-             ('Scrape',
-                {'job_board': 'jobsdatastore'}
-             ),
-             ('JobTitle', {}),
-             ('JobDescription', {}),
+            [('JobBoard', {}),
+             ('ListingTag', {}),
+             ('Scrape', {}),
+             ('ScrapeJobBoard', {'job_board': 'scraper', 'scrape': 'scraper'}),
+             ('JobBoardListingTag', {'job_board': 'scraper', 'listing_tag': 'scraper'}),
              ('Company', {}),
-             ('ListingTag',
-                {'job_board': 'jobsdatastore'}
-             ),
              ('Technology', {}),
-             ('JobPost',
-                {
-                'company': 'jobsdatastore',
-                'job_description': 'jobsdatastore',
-                'job_title': 'jobsdatastore',
-                'scrape': 'jobsdatastore'
-                }
-            ),
-            ('JobPostListingTag',
-                {
-                'job_post': 'jobsdatabucket',
-                'listing_tag': 'jobsdatastore'
-                }
-            ),
-            ('JobPostTechnology',
-                {
-                'job_post': 'jobsdatabucket',
-                'technology': 'jobsdatastore'}
+             ('CompanyTechnology',{'company': 'jobsdatastore', 'technology': 'jobsdatastore'}),
+             ('JobPost', {}),
+             ('JobPostCompany', {'company': 'jobsdatastore', 'job_post': 'jobsdatabucket'}),
+             ('JobPostListingTag', {'job_post': 'jobsdatabucket', 'listing_tag': 'scraper'}),
+             ('JobPostScrape', {'job_post': 'jobsdatabucket', 'scrape': 'scraper'}),
+             ('JobPostTechnology', {'job_post': 'jobsdatabucket', 'technology': 'jobsdatastore'})
+             ],
+             "7 of 13 models have foreign keys. 3 have foreign keys in scraper; 3 have foreign keys in jobsdatastore and 3 have foreign keys in jobsdatabucket"
             )
-            ],
-            "5/10 models have foreign keys.All the jobsdatabucket apps have foreign keys in jobsdatastore"
-        )
 
 
 if __name__ == '__main__':
