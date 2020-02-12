@@ -1,3 +1,30 @@
+"""Codegeneration Functions
+
+This module contains the functions that do the main work of the code
+generator.
+
+
+Examples
+--------
+    generate_code(output_dir, *[('appname', 'path/to/input/csv'), ... ])
+
+Notes
+-----
+    1. generate_models is called like a helper by generate_code
+    2. ...
+
+Attributes
+----------
+    django_model_objects: dict
+        Key: model names, value: DjangoModel object
+    foreignkeynames_models: dict
+        Key: lower case foreign key field name, value: uppercase model name
+
+Author
+-----
+    emilledigital@gmail.com
+"""
+import pprint
 import csv
 import os
 from codegeneration.models import *
