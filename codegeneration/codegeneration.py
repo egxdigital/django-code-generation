@@ -37,13 +37,8 @@ def main(output_dir, djangoappnames:list):
     output_dir : 'str' or Path-like object
         The target directory for saving the output of the code generator
     djangoappnames : list
-        list of tuples of the form ('appname', 'path/to/input/csv')
-    file_app_names : list
-        unordered list of strings containing the names of the Django apps
-    sorted_csv_paths : list
-        ordered list of strings containing the path names of the app CSVs
-    list_of_tuples : list
-        ordered list of tuples of the form given by djangoappnames
+        list of strings by order of Django app parentage.
+
     Returns
     -------
     int
@@ -59,11 +54,10 @@ def main(output_dir, djangoappnames:list):
         print ('Error: args != number of available csv')
         return
 
-    file_app_names = [os.path.splitext(n)[0] for n in csv_file_names]
-
+    app_names = [os.path.splitext(n)[0] for n in csv_file_names]
 
     for appname in djangoappnames:
-        if appname[0] not in file_app_names:
+        if appname[0] not in app_names:
             print ('Error: corresponding csv for {} not available'.format(appname[0]))
             return
 
@@ -73,10 +67,6 @@ def main(output_dir, djangoappnames:list):
         sorted_csv_paths.append(os.path.join(os.path.dirname(__file__), 'data', appname[0] + '.csv'))
 
     list_of_tuples = [(a,b) for a,b in zip([_[0] for _ in djangoappnames], sorted_csv_paths)]
-
-    #pprint.pprint (sorted_csv_names)
-    #pprint.pprint (list_of_tuples)
-
 
     generate_code(output_dir, *list_of_tuples)
 
@@ -89,7 +79,6 @@ def main(output_dir, djangoappnames:list):
         created = len(listdir(output_dir))
         print ("{} files were created in {}".format(created,output_dir))
         return created
-
     """
 
 if __name__ == '__main__':

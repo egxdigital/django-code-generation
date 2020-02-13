@@ -30,9 +30,26 @@ import os
 from codegeneration.models import *
 from codegeneration.helpers import *
 
+
 django_model_objects    = {}
 models_docstrings       = {}
 foreignkeynames_models  = {}
+
+def build_docstring_collection(dict, m, docstring):
+    if docstring == None:
+        return
+    dict[m] = docstring
+
+def save_foreignkey_lookup_data(dict, m):
+    underscored = helper_return_underscore_separated_fieldname(m)
+    dict[underscored] = m
+
+def create_object_then_save(dict, dict2, m, dapp, dfield, fname):
+    obj = DjangoModel(m, dapp)
+    obj.docstring = dict2.get(m)
+    obj.add_line_to_models_code_fragment(dfield, fname)
+    obj.add_line_to_test_models_code_fragment(dfield, fname)
+    dict[m] = obj
 
 def generate_models(inp, djangoapp):
     """Takes a file path and a Django app name and populates
@@ -60,27 +77,23 @@ def generate_models(inp, djangoapp):
         for row in rdr:
             djangofield = row[0]
             fieldname = row[1]
+            docstring = row[2]
 
             if djangofield == 'models.Model':
                 model_name = fieldname
 
-                # Build docstring dict
-                # build_docstring_collection()
-                model_docstring = row[2]
-                models_docstrings[model_name] = model_docstring
+                build_docstring_collection(models_docstrings, model_name, docstring)
 
-                # Save some data
-                # save_foreignkey_lookup_data(global_dict, model_name)
-                underscored = helper_return_underscore_separated_fieldname(model_name)
-                foreignkeynames_models[underscored] = model_name
+                save_foreignkey_lookup_data(foreignkeynames_models, model_name)
 
-                # Create object and save
-                # create_object_then_save(global_dict, model, djangoapp, djangofield, fieldname)
-                obj = DjangoModel(model_name, djangoapp)
-                obj.docstring = model_docstring
-                obj.add_line_to_models_code_fragment(djangofield, fieldname)
-                obj.add_line_to_test_models_code_fragment(djangofield, fieldname)
-                django_model_objects[model_name] = obj
+                create_object_then_save(
+                    django_model_objects,
+                    models_docstrings,
+                    model_name,
+                    djangoapp,
+                    djangofield,
+                    fieldname
+                )
 
 
             list_of_models = foreignkeynames_models.values()

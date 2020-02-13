@@ -17,7 +17,7 @@ from codegeneration.helpers import *
 
 model_fields_str = {
     'models.Model':     "\n\nclass {field}(models.Model):\n",
-    'UUIDField':       "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
+    'UUIDField':        "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
     'DateField':        "    {field} = models.DateField(auto_now=False, auto_now_add=False)\n",
     'IntegerField':     "    {field} = models.IntegerField(null=True)\n",
     'DurationField':    "    {field} = models.DurationField(null=True)\n",
@@ -94,7 +94,6 @@ class DjangoModel():
 
         if djangofield == 'models.Model':
             self._add_model_docstring_to_code_fragment()
-
 
 
     def add_line_to_test_models_code_fragment(self, djangofield, fieldname):
