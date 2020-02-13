@@ -7,14 +7,17 @@ import pprint
 import unittest
 import csv
 import os
+from os import listdir
+from os.path import isfile, join
 from codegeneration.codegeneration import *
 from codegeneration.functions import *
 
 class TestCodegeneration(unittest.TestCase):
     def setUp(self):
         self.Diff = None
-        self.test_data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-        self.test_output_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'output'))
+        self.current_directory = os.path.dirname( __file__ )
+        self.test_data_dir = os.path.abspath(os.path.join(self.current_directory, 'data'))
+        self.test_output_dir = os.path.abspath(os.path.join(self.current_directory, 'output'))
 
         self.src1 = '{}/scraper.csv'.format(self.test_data_dir)
         self.src2 = '{}/jobsdatastore.csv'.format(self.test_data_dir)
@@ -25,6 +28,18 @@ class TestCodegeneration(unittest.TestCase):
         self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
         generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+
+
+    def tearDown(self):
+        dir = self.test_output_dir
+        filepaths = [os.path.join(dir,f) for f in listdir(dir) if isfile(join(dir, f))]
+
+        for file in filepaths:
+            try:
+                os.unlink(file)
+            except Exception as e:
+                print ("tearDown: {} on\n {}".format(e, file))
+
 
     def test_create_models_add_fields_from_csv(self):
         """Tests for the corrrect number of models and files generated"""
@@ -87,7 +102,7 @@ class TestCodegeneration(unittest.TestCase):
 
     def test_models_foreignkeys_parents(self):
         """Tests whether foreign keys are imported from the correct app"""
-        
+
         self.Diff = None
         self.assertEqual(
             [(_.modelname,_.foreignkey_parent) for _ in django_model_objects.values()],
