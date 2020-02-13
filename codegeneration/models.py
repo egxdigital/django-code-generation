@@ -57,6 +57,7 @@ class DjangoModel():
         self.foreignkey_parent          = {}
         self.models_code_fragment       = ''
         self.test_models_code_fragment  = ''
+        self.docstring                  = ''
 
     def __str__(self):
         """TODO: Write docstring
@@ -68,9 +69,16 @@ class DjangoModel():
         return f"{self.modelname}\nNumber of fields: {field_number}\nFields: {', '.join(fields)}\nNumber of foreign key fields: {len(self.foreignkey_names.values())}\nForeign key field(s):...{', '.join(_ for _ in self.foreignkey_names.keys())}\n-----\n"
 
 
+    def _add_model_docstring_to_code_fragment(self):
+        """Adds a docstring after adding the first line of the model's code"""
+        literal   = "    \"\"\"{}\"\"\"\n"
+        model_doc = literal.format(self.docstring)
+        self.models_code_fragment += model_doc
+
+
     def add_line_to_models_code_fragment(self,djangofield,fieldname):
-        """Concatenates the format string each time a field
-        is added to the model
+        """Concatenates a line of model code to DjangoModel.models_code_fragment
+        each time a new line of the csv is read.
         """
         fmodel = helper_return_camel_case_foreign_key_modelname(fieldname)
         fapp = self.foreignkey_parent.get(fieldname)
@@ -83,6 +91,11 @@ class DjangoModel():
                         )
 
         self.models_code_fragment += code
+
+        if djangofield == 'models.Model':
+            self._add_model_docstring_to_code_fragment()
+
+
 
     def add_line_to_test_models_code_fragment(self, djangofield, fieldname):
         if djangofield == 'models.Model':

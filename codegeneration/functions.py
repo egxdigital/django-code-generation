@@ -30,8 +30,9 @@ import os
 from codegeneration.models import *
 from codegeneration.helpers import *
 
-django_model_objects = {}
-foreignkeynames_models = {}
+django_model_objects    = {}
+models_docstrings       = {}
+foreignkeynames_models  = {}
 
 def generate_models(inp, djangoapp):
     """Takes a file path and a Django app name and populates
@@ -63,12 +64,20 @@ def generate_models(inp, djangoapp):
             if djangofield == 'models.Model':
                 model_name = fieldname
 
+                # Build docstring dict
+                # build_docstring_collection()
+                model_docstring = row[2]
+                models_docstrings[model_name] = model_docstring
+
                 # Save some data
+                # save_foreignkey_lookup_data(global_dict, model_name)
                 underscored = helper_return_underscore_separated_fieldname(model_name)
                 foreignkeynames_models[underscored] = model_name
 
                 # Create object and save
+                # create_object_then_save(global_dict, model, djangoapp, djangofield, fieldname)
                 obj = DjangoModel(model_name, djangoapp)
+                obj.docstring = model_docstring
                 obj.add_line_to_models_code_fragment(djangofield, fieldname)
                 obj.add_line_to_test_models_code_fragment(djangofield, fieldname)
                 django_model_objects[model_name] = obj
@@ -149,14 +158,4 @@ def generate_code(output_dir, *djangoapps_inputfiles):
     return created
 
 if __name__ == '__main__':
-    import os
-    data_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), 'data'))
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'deleteme'))
-
-    src1 = '{}/jobsdatastore.csv'.format(data_dir)
-    src2 = '{}/jobsdatabucket.csv'.format(data_dir)
-
-    jobsdatastore = ('jobsdatastore', src1)
-    jobsdatabucket = ('jobsdatabucket', src2)
-
-    generate_code(output_dir, *[jobsdatastore, jobsdatabucket])
+    pass
