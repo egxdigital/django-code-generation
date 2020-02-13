@@ -12,7 +12,23 @@ from os.path import isfile, join
 from codegeneration.codegeneration import *
 from codegeneration.functions import *
 
-class TestCodegeneration(unittest.TestCase):
+class TestCodeGeneration(unittest.TestCase):
+
+    def _prepare_output_directory(self):
+        """Deletes any existing files in test output"""
+        dir = self.test_output_dir
+        filepaths = [os.path.join(dir,f) for f in listdir(dir) if isfile(join(dir, f))]
+
+        if len(filepaths) == 0:
+            return
+
+        for file in filepaths:
+            try:
+                os.unlink(file)
+            except Exception as e:
+                print ("tearDown: {} on\n {}".format(e, file))
+
+
     def setUp(self):
         self.Diff = None
         self.current_directory = os.path.dirname( __file__ )
@@ -27,18 +43,15 @@ class TestCodegeneration(unittest.TestCase):
         self.jobsdatastore = ('jobsdatastore', self.src2)
         self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
+        self._prepare_outpudef _prepare_output_directory(self):
+        """Deletes any existing files in test output"""
+        dir = self.test_output_dir
+        filepatt_directory()
         generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
 
 
     def tearDown(self):
-        dir = self.test_output_dir
-        filepaths = [os.path.join(dir,f) for f in listdir(dir) if isfile(join(dir, f))]
-
-        for file in filepaths:
-            try:
-                os.unlink(file)
-            except Exception as e:
-                print ("tearDown: {} on\n {}".format(e, file))
+        self._prepare_output_directory()
 
 
     def test_create_models_add_fields_from_csv(self):
