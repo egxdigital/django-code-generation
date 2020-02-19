@@ -8,13 +8,23 @@ Author
     emilledigital@gmail.com
 """
 
-def helper_return_underscore_separated_fieldname(str):
+def helper_pluralize(inp):
+    """Takes a string and returns the plural form.
+    Assumes that there are only two plural forms
+    for all the words to be passed.
+    """
+    if inp[-1] == 'y':
+        return inp[:-1] + 'ies'
+    return inp + 's'
+
+
+def helper_return_underscore_separated_fieldname(inp):
     """Takes a CamelCase or uppercase string and returns an
     underscore separated, lower case version of the string.
 
     Parameters
     ----------
-    str : str
+    inp : str
         the camel case string to be converted to lower case
 
     Returns
@@ -24,18 +34,18 @@ def helper_return_underscore_separated_fieldname(str):
 
     """
     import re
-    splitted = re.sub(r"([A-Z])", r" \1", str).split()
+    splitted = re.sub(r"([A-Z])", r" \1", inp).split()
     res = '_'.join(splitted)
     return res.lower()
 
 
-def helper_return_camel_case_foreign_key_modelname(str):
+def helper_return_camel_case_foreign_key_modelname(inp):
     """Takes a string of the form 'job_board' and returns a string
     of the form JobBoard
 
     Parameters
     ----------
-    str : str
+    inp : str
         Example: 'job_board'
 
     Returns
@@ -44,14 +54,19 @@ def helper_return_camel_case_foreign_key_modelname(str):
         Example JobBoard
     """
 
-    if '_' not in str:
-        return str.capitalize()
+    if '_' not in inp:
+        return inp.capitalize()
 
     else:
         import re
-        splitted = re.sub(r"([A-Z])", r" \1", str).split('_')
+        splitted = re.sub(r"([A-Z])", r" \1", inp).split('_')
         res = ''.join([_.capitalize() for _ in splitted])
         return res
+
+
+def helper_append_contents_to_file(contents, file):
+    with open(file, 'a') as fd:
+        fd.write(contents)
 
 
 def helper_prepare_models_py(dest):
@@ -70,7 +85,6 @@ def helper_prepare_models_py(dest):
 
     with open(dest, 'w+') as py:
         py.write('from django.db import models\nimport uuid')
-
 
 
 def helper_prepare_test_models_py(appname, models, dest):
@@ -103,7 +117,31 @@ def helper_prepare_test_models_py(appname, models, dest):
         testpy.write(contents)
 
 
-def helper_return_dest_models_py_filepath(djangoapp, dest_dir):
+def helper_return_filepath(inp, djangoapp, dir):
+    """Takes a file name, a Django app name and an
+    output directory path and returns a file path.
+
+    Parameters
+    ----------
+    inp : str
+
+    djangoapp : type
+        Description of parameter `djangoapp`.
+    dir : type
+        Description of parameter `dir`.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
+    """
+    import os
+    filepath = '{}/{}_{}.py'.format(os.path.abspath(dir), djangoapp, inp)
+    return filepath
+
+
+def helper_return_models_files(djangoapp, dir):
     """Takes Django app name and destination directory
     and returns a filepath as a string
 
@@ -120,10 +158,4 @@ def helper_return_dest_models_py_filepath(djangoapp, dest_dir):
         (models.py file path, test_models.py filepath)
 
     """
-
-    import os
-    output_dir =  os.path.abspath(dest_dir)
-    dest_file = '{}/{}_models.py'.format(output_dir, djangoapp)
-    dest_test_file = '{}/{}_test_models.py'.format(output_dir, djangoapp)
-
-    return dest_file, dest_test_file
+    return helper_return_filepath('models', djangoapp, dir), helper_return_filepath('test_models', djangoapp, dir)
