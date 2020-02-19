@@ -1,7 +1,7 @@
 """Test Gen Models OOP
 
 Usage
-    $ python3 -m unittest codegeneration.tests.test_gen_models_oop
+    $ python3 -m unittest codegeneration.tests.test_models
 """
 import unittest
 import csv

@@ -10,7 +10,7 @@ test_str:dict
     Opinionated representation of test type: 'barebones' test_models.py code fragment
 
 Author
------
+------
     emilledigital@gmail.com
 """
 from codegeneration.helpers import *
@@ -19,6 +19,7 @@ model_fields_str = {
     'models.Model':     "\n\nclass {field}(models.Model):\n",
     'UUIDField':        "    {field} = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n",
     'DateField':        "    {field} = models.DateField(auto_now=False, auto_now_add=False)\n",
+    'DateTimeField':    "    {field} = models.DateTimeField(auto_now=False, auto_now_add=False)\n",
     'IntegerField':     "    {field} = models.IntegerField(null=True)\n",
     'DurationField':    "    {field} = models.DurationField(null=True)\n",
     'BooleanField':     "    {field} = models.BooleanField()\n",
@@ -47,6 +48,46 @@ class ModelField():
 
 
 class DjangoModel():
+    """A representation of a models.Model
+    object in Django.
+
+    Parameters
+    ----------
+    modelname : type
+        Description of parameter `modelname`.
+    djangoapp : type
+        Description of parameter `djangoapp`.
+    *args : type
+        Description of parameter `*args`.
+    **kwargs : type
+        Description of parameter `**kwargs`.
+
+    Attributes
+    ----------
+    fields : type
+        Description of attribute `fields`.
+    isForeignkey : type
+        Description of attribute `isForeignkey`.
+    isForeignkeyIn : type
+        Description of attribute `isForeignkeyIn`.
+    foreignkey_names : type
+        Description of attribute `foreignkey_names`.
+    foreignkey_parent : type
+        Description of attribute `foreignkey_parent`.
+    models_code_fragment : type
+        Description of attribute `models_code_fragment`.
+    urls_code_fragment : type
+        Description of attribute `urls_code_fragment`.
+    serializers_code_fragment : type
+        Description of attribute `serializers_code_fragment`.
+    test_models_code_fragment : type
+        Description of attribute `test_models_code_fragment`.
+    docstring : type
+        Description of attribute `docstring`.
+    modelname
+    djangoapp
+
+    """
     def __init__(self, modelname, djangoapp, *args, **kwargs):
         self.fields                     = kwargs
         self.modelname                  = modelname
@@ -56,6 +97,8 @@ class DjangoModel():
         self.foreignkey_names           = {}
         self.foreignkey_parent          = {}
         self.models_code_fragment       = ''
+        self.urls_code_fragment         = ''
+        self.serializers_code_fragment  = ''
         self.test_models_code_fragment  = ''
         self.docstring                  = ''
 
@@ -68,6 +111,9 @@ class DjangoModel():
             return f"{self.modelname}\nForeign key in: {', '.join(self.isForeignkeyIn)}\nNumber of fields: {field_number}\nFields: {', '.join(fields)}\nNumber of foreign key fields: {len(self.foreignkey_names.values())}\nForeign key field(s): {', '.join(_ for _ in self.foreignkey_names.keys())}\n-----\n"
         return f"{self.modelname}\nNumber of fields: {field_number}\nFields: {', '.join(fields)}\nNumber of foreign key fields: {len(self.foreignkey_names.values())}\nForeign key field(s):...{', '.join(_ for _ in self.foreignkey_names.keys())}\n-----\n"
 
+
+    def add_urls_code_fragment(self):
+        pass
 
     def _add_model_docstring_to_code_fragment(self):
         """Adds a docstring after adding the first line of the model's code"""
@@ -82,9 +128,9 @@ class DjangoModel():
         """
         fmodel = helper_return_camel_case_foreign_key_modelname(fieldname)
         fapp = self.foreignkey_parent.get(fieldname)
-        str = model_fields_str.get(djangofield)
+        line = model_fields_str.get(djangofield)
 
-        code = str.format(
+        code = line.format(
                         field=fieldname,
                         foreignapp=fapp,
                         foreignmodel=fmodel
@@ -97,19 +143,22 @@ class DjangoModel():
 
 
     def add_line_to_test_models_code_fragment(self, djangofield, fieldname):
+        """Concatenates a line of test code to DjangoModel.test_models_code_fragment
+        each time a new line of the csv is read.
+        """
         if djangofield == 'models.Model':
-            str = test_str.get('TestCase')
-            str2 = test_str.get('TestisInstance')
-            self.test_models_code_fragment += str.format(fieldname)
-            self.test_models_code_fragment += str2.format(m=fieldname)
+            lin1 = test_str.get('TestCase')
+            lin2 = test_str.get('TestisInstance')
+            self.test_models_code_fragment += lin1.format(fieldname)
+            self.test_models_code_fragment += lin2.format(m=fieldname)
 
         elif djangofield == 'UUIDField':
-            str = test_str.get('TestPrimaryKey')
-            self.test_models_code_fragment += str.format(fieldname)
+            lin = test_str.get('TestPrimaryKey')
+            self.test_models_code_fragment += lin.format(fieldname)
 
         elif djangofield == 'ForeignKey':
-            str = test_str.get('TestForeignKey')
-            s = str.format(ffield=fieldname,
+            lin = test_str.get('TestForeignKey')
+            s = lin.format(ffield=fieldname,
                            fModel=self.foreignkey_names.get(fieldname),
                            field=fieldname,
                            model='<placeholder>',
@@ -119,8 +168,8 @@ class DjangoModel():
 
         else:
             if self.isForeignkey:
-                str = test_str.get('TestForeignKey')
-                s = str.format(ffield=fieldname,
+                lin = test_str.get('TestForeignKey')
+                s = lin.format(ffield=fieldname,
                                fModel=self.foreignkey_names.get(fieldname),
                                field=fieldname,
                                model='<placeholder>',
@@ -129,8 +178,8 @@ class DjangoModel():
                 self.test_models_code_fragment += s
 
             else:
-                str = test_str.get('TestFields')
-                s = str.format(field=fieldname,
+                lin = test_str.get('TestFields')
+                s = lin.format(field=fieldname,
                                  model=self.modelname.lower(),
                                  Model=self.modelname
                                 )
