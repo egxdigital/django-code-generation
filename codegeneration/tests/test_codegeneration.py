@@ -1,7 +1,7 @@
 """Test Codegeneration
 
 Usage
-    $ python3 -m unittest codegeneration.tests.test_gen_models_oop
+    $ python3 -m unittest codegeneration.tests.test_codegeneration
 """
 import pprint
 import unittest
@@ -43,22 +43,20 @@ class TestCodeGeneration(unittest.TestCase):
         self.jobsdatastore = ('jobsdatastore', self.src2)
         self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
-        self._prepare_outpudef _prepare_output_directory(self):
-        """Deletes any existing files in test output"""
+        self._prepare_output_directory()
         dir = self.test_output_dir
-        filepatt_directory()
         generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
 
-
+    """
     def tearDown(self):
         self._prepare_output_directory()
-
+    """
 
     def test_create_models_add_fields_from_csv(self):
         """Tests for the corrrect number of models and files generated"""
 
         self.assertEqual(len(django_model_objects.keys()),13,"Test data contains 13 models across three Django apps")
-        self.assertEqual(len(os.listdir(self.test_output_dir)),6,"Six files should be generated for the three test app csv's")
+        self.assertEqual(len(os.listdir(self.test_output_dir)),12,"Six files should be generated for the three test app csv's")
 
 
     def test_models_isForeignkey(self):
