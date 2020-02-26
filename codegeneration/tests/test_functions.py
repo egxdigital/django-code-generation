@@ -3,11 +3,10 @@
 Usage
     $ python3 -m unittest codegeneration.tests.test_functions
 """
-import os
+import os, sys
 from os import listdir
 from os.path import isfile, join
-import sys
-import csv
+import csv, json, pprint
 import unittest
 from codegeneration.models import *
 from codegeneration.fragments import *
@@ -30,27 +29,24 @@ class TestGenerateUrls(unittest.TestCase):
             except Exception as e:
                 print ("tearDown: {} on\n {}".format(e, file))
 
-
     def setUp(self):
+        self.current_directory = os.path.dirname( __file__ )
+        self.test_data_dir = os.path.abspath(os.path.join(self.current_directory, 'data'))
+        self.test_output_dir = os.path.abspath(os.path.join(self.current_directory, 'output'))
+
         tech_fields = {'technology_name': 'CharField'}
         company_fields = {'company_name': 'CharField'}
-        model_fields = {'date':'DateField','duration':'DurationField','entries_made':'IntegerField','success':'BooleanField'}
-
-        self.valid_string = (
-            ""
-        )
+        jobboard_fields = {'jobboard_name':'CharField', 'home_page':'URLField', 'search_page':'URLField'}
+        scrape_fields = {'date':'DateField','duration':'DurationField','entries_made':'IntegerField','success':'BooleanField'}
+        scrapejobboard_fields = {'scrape':'ForeignKey', 'job_board':'ForeignKey'}
 
         self.valid_apps_models = {
             'scraper': ['Scrape'],
             'jobsdatastore': ['Technology', 'Company']
         }
 
-        self.current_directory = os.path.dirname( __file__ )
-        self.test_data_dir = os.path.abspath(os.path.join(self.current_directory, 'data'))
-        self.test_output_dir = os.path.abspath(os.path.join(self.current_directory, 'output'))
-
         self.models = {}
-        self.m = DjangoModel('Scrape', 'scraper', **model_fields)
+        self.m = DjangoModel('Scrape', 'scraper', **scrape_fields)
         self.v = DjangoModel('Technology', 'jobsdatastore', **tech_fields)
         self.h = DjangoModel('Company', 'jobsdatastore', **company_fields)
 
@@ -58,14 +54,37 @@ class TestGenerateUrls(unittest.TestCase):
         self.models[self.v.modelname] = self.v
         self.models[self.h.modelname] = self.h
 
+        self.src1 = '{}/scraper.csv'.format(self.test_data_dir)
+        self.src2 = '{}/jobsdatastore.csv'.format(self.test_data_dir)
+        self.src3 = '{}/jobsdatabucket.csv'.format(self.test_data_dir)
+
+        self.scraper = ('scraper', self.src1)
+        self.jobsdatastore = ('jobsdatastore', self.src2)
+        self.jobsdatabucket = ('jobsdatabucket', self.src3)
+
     def test_apps_models(self):
         self._prepare_output_directory()
-        generate_urls_py_files(self.models, self.test_output_dir, urls_skeleton, urls_url_pattern)
+        generate_urls_py_files(self.models, self.test_output_dir, urls_router_skeleton, urls_register_router)
         self.assertEqual(apps_models, self.valid_apps_models)
 
     def test_generate_api(self):
         self._prepare_output_directory()
         generate_api(self.valid_apps_models, self.test_output_dir)
+
+    def test_viewset_builder(self):
+        self._prepare_output_directory()
+        dir = self.test_output_dir
+        generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+
+        for app in apps_models.keys():
+            #print (app)
+            listOfModels = apps_models[app]
+            viewSets = []
+            for model in listOfModels:
+                #print ('\t', model)
+                viewSets += ["{}ViewSet".format(model)]
+
+            apps_ViewSets[app] = ", ".join(viewSets)
 
 
 if __name__ == '__main__':

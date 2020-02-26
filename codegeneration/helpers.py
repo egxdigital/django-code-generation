@@ -8,6 +8,11 @@ Author
     emilledigital@gmail.com
 """
 
+def helper_remove_underscore(inp):
+    if '_' in inp:
+        return ''.join(inp.split('_'))
+    return inp
+
 def helper_pluralize(inp):
     """Takes a string and returns the plural form.
     Assumes that there are only two plural forms

@@ -1,29 +1,11 @@
 from django.urls import path
-from jobsdatastore.api import views
+from rest_framework.routers import SimpleRouter
+from jobsdatastore.api.views import CompanyViewSet, TechnologyViewSet, CompanyTechnologyViewSet
 
-urlpatterns = [
-    path('api/companies/',
-        views.CompanyListCreateAPIView.as_view(),
-        name='company-list'),
 
-    path('api/company/<PLACEHOLDER>/',
-        views.CompanyRetrieveUpdateDestroyAPIView.as_view(),
-        name='company-detail'),
+router = SimpleRouter()
+router.register('api/companies)', CompanyViewSet)
+router.register('api/technologies)', TechnologyViewSet)
+router.register('api/companytechnologies)', CompanyTechnologyViewSet)
 
-    path('api/technologies/',
-        views.TechnologyListCreateAPIView.as_view(),
-        name='technology-list'),
-
-    path('api/technology/<PLACEHOLDER>/',
-        views.TechnologyRetrieveUpdateDestroyAPIView.as_view(),
-        name='technology-detail'),
-
-    path('api/companytechnologies/',
-        views.CompanyTechnologyListCreateAPIView.as_view(),
-        name='companytechnology-list'),
-
-    path('api/companytechnology/<PLACEHOLDER>/',
-        views.CompanyTechnologyRetrieveUpdateDestroyAPIView.as_view(),
-        name='companytechnology-detail'),
-
-]
+urlpatterns = router.urls

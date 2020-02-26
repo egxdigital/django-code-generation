@@ -1,389 +1,238 @@
-"""Test API
-
-This module cointains the test cases for the API views of the scraper
-Django application.
-
-Examples
-    python manage.py test --pattern="test_*" scraper.tests
-
-"""
-import json
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient
-from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
-from scraper.api.serializers import JobBoardSerializer, ListingTagSerializer, ScrapeSerializer, ScrapeJobBoardSerializer, JobBoardListingTagSerializer
-from scraper.api.views import JobBoardListCreateAPIView, JobBoardRetrieveUpdateDestroyAPIView, ListingTagListCreateAPIView, ListingTagRetrieveUpdateDestroyAPIView, ScrapeListCreateAPIView, ScrapeRetrieveUpdateDestroyAPIView, ScrapeJobBoardListCreateAPIView, ScrapeJobBoardRetrieveUpdateDestroyAPIView, JobBoardListingTagListCreateAPIView, JobBoardListingTagRetrieveUpdateDestroyAPIView
-
-client = RequestsClient()
-
-class TestJobBoardListCreateAPIView(APITestCase):
+class TestJobBoardAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse('jobboard-list')
-        """<ADD DATA INSTANCES HERE>"""
+        self.view = JobBoardViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'})
+        self.url = ('http://127.0.0.1:8000/api/jobboards/')
 
-    def test_create_jobboards(self):
-        """Tests the jobboard-list endpoint for the creation of
-        a multiple entries using the POST method.
-        """
-        response = self.client.post(self.url,self.<placeholder>,format='json')
-
-        self.assertEqual(JobBoard.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.valid_jobboard = {
+            jobboard_name:CharField,
+            home_page:URLField,
+            search_page:URLField,
+        }
 
     def test_create_jobboard(self):
-        """Tests the jobboard-list endpoint for the creation of
-        a single entry using the POST method.
-        """
-        response = self.client.post(self.url, self.<placeholder>, format='json')
+        response = self.client.post(self.url, self.valid_jobboard, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(JobBoard.objects.get().PLACEHOLDER, self.<placeholder>['PLACEHOLDER'])
+        self.assertEqual(JobBoard.objects.count(), 1)
 
-
-class TestJobBoardRetrieveUpdateDestroyAPIView(APITestCase):
-    def setUp(self):
-       self.factory = APIRequestFactory()
-       self.view = JobBoardRetrieveUpdateDestroyAPIView.as_view()
-
-    def test_get_single_jobboard(self):
-         """Tests the jobboard-list endpoint for the retrieval of
-        a single entry using the GET method.
-        """
-        post_url = reverse('jobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = JobBoard.objects.get(PLACEHOLDER='<placeholder>')
-
-        request = self.factory.get('jobboard-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
-        response.render()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
 
     def test_update_jobboard(self):
-        """Tests the jobboard-detail endpoint for the update of
-        a single entry using the PUT method.
-        """
-        post_url = reverse('jobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        saved = JobBoard.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        edited = <placeholder>
-        put_url = reverse('jobboard-detail', <kwargs=PLACEHOLDER: saved.PLACEHOLDER>)
-        response = self.client.put(put_url, edited)
-        response_data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
+        post = self.client.post(self.url, self.valid_jobboard, format='json')
+        self.assertEqual(JobBoard.objects.get().<field>.<attr>, "<before_value>")
 
-    def test_delete_jobboard(self):
-        """Tests the jobboard-detail endpoint for the deletion of
-        a single entry using the DELETE method.
-        """
-        post_url = reverse('jobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = JobBoard.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        request = self.factory.delete('jobboard-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
+        jobboard_pk = str(JobBoard.objects.get().jobboard_id)
+
+        data = {
+            jobboard_name:CharField,
+            home_page:URLField,
+            search_page:URLField,
+        }
+
+        request = self.factory.put('api/jobboards/', data, format='json')
+        response = self.view(request, pk=jobboard_pk)
         response.render()
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(JobBoard.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(JobBoard.objects.count(), 1)
+        self.assertEqual(JobBoard.objects.get().<field>.<attr>, "<after value>")
 
 
-class TestListingTagListCreateAPIView(APITestCase):
+class TestListingTagAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse('listingtag-list')
-        """<ADD DATA INSTANCES HERE>"""
+        self.view = ListingTagViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'})
+        self.url = ('http://127.0.0.1:8000/api/listingtags/')
 
-    def test_create_listingtags(self):
-        """Tests the listingtag-list endpoint for the creation of
-        a multiple entries using the POST method.
-        """
-        response = self.client.post(self.url,self.<placeholder>,format='json')
-
-        self.assertEqual(ListingTag.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.valid_listingtag = {
+            listingtag_name:CharField,
+        }
 
     def test_create_listingtag(self):
-        """Tests the listingtag-list endpoint for the creation of
-        a single entry using the POST method.
-        """
-        response = self.client.post(self.url, self.<placeholder>, format='json')
+        response = self.client.post(self.url, self.valid_listingtag, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ListingTag.objects.get().PLACEHOLDER, self.<placeholder>['PLACEHOLDER'])
+        self.assertEqual(ListingTag.objects.count(), 1)
 
-
-class TestListingTagRetrieveUpdateDestroyAPIView(APITestCase):
-    def setUp(self):
-       self.factory = APIRequestFactory()
-       self.view = ListingTagRetrieveUpdateDestroyAPIView.as_view()
-
-    def test_get_single_listingtag(self):
-         """Tests the listingtag-list endpoint for the retrieval of
-        a single entry using the GET method.
-        """
-        post_url = reverse('listingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = ListingTag.objects.get(PLACEHOLDER='<placeholder>')
-
-        request = self.factory.get('listingtag-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
-        response.render()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
 
     def test_update_listingtag(self):
-        """Tests the listingtag-detail endpoint for the update of
-        a single entry using the PUT method.
-        """
-        post_url = reverse('listingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        saved = ListingTag.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        edited = <placeholder>
-        put_url = reverse('listingtag-detail', <kwargs=PLACEHOLDER: saved.PLACEHOLDER>)
-        response = self.client.put(put_url, edited)
-        response_data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
+        post = self.client.post(self.url, self.valid_listingtag, format='json')
+        self.assertEqual(ListingTag.objects.get().<field>.<attr>, "<before_value>")
 
-    def test_delete_listingtag(self):
-        """Tests the listingtag-detail endpoint for the deletion of
-        a single entry using the DELETE method.
-        """
-        post_url = reverse('listingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = ListingTag.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        request = self.factory.delete('listingtag-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
+        listingtag_pk = str(ListingTag.objects.get().listingtag_id)
+
+        data = {
+            listingtag_name:CharField,
+        }
+
+        request = self.factory.put('api/listingtags/', data, format='json')
+        response = self.view(request, pk=listingtag_pk)
         response.render()
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(ListingTag.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ListingTag.objects.count(), 1)
+        self.assertEqual(ListingTag.objects.get().<field>.<attr>, "<after value>")
 
 
-class TestScrapeListCreateAPIView(APITestCase):
+class TestScrapeAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse('scrape-list')
-        """<ADD DATA INSTANCES HERE>"""
+        self.view = ScrapeViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'})
+        self.url = ('http://127.0.0.1:8000/api/scrapes/')
 
-    def test_create_scrapes(self):
-        """Tests the scrape-list endpoint for the creation of
-        a multiple entries using the POST method.
-        """
-        response = self.client.post(self.url,self.<placeholder>,format='json')
-
-        self.assertEqual(Scrape.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.valid_scrape = {
+            scrape_date:DateField,
+            entries_scraped:IntegerField,
+            scrape_duration:DurationField,
+            scrape_success:BooleanField,
+        }
 
     def test_create_scrape(self):
-        """Tests the scrape-list endpoint for the creation of
-        a single entry using the POST method.
-        """
-        response = self.client.post(self.url, self.<placeholder>, format='json')
+        response = self.client.post(self.url, self.valid_scrape, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scrape.objects.get().PLACEHOLDER, self.<placeholder>['PLACEHOLDER'])
+        self.assertEqual(Scrape.objects.count(), 1)
 
-
-class TestScrapeRetrieveUpdateDestroyAPIView(APITestCase):
-    def setUp(self):
-       self.factory = APIRequestFactory()
-       self.view = ScrapeRetrieveUpdateDestroyAPIView.as_view()
-
-    def test_get_single_scrape(self):
-         """Tests the scrape-list endpoint for the retrieval of
-        a single entry using the GET method.
-        """
-        post_url = reverse('scrape-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = Scrape.objects.get(PLACEHOLDER='<placeholder>')
-
-        request = self.factory.get('scrape-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
-        response.render()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
 
     def test_update_scrape(self):
-        """Tests the scrape-detail endpoint for the update of
-        a single entry using the PUT method.
-        """
-        post_url = reverse('scrape-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        saved = Scrape.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        edited = <placeholder>
-        put_url = reverse('scrape-detail', <kwargs=PLACEHOLDER: saved.PLACEHOLDER>)
-        response = self.client.put(put_url, edited)
-        response_data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
+        post = self.client.post(self.url, self.valid_scrape, format='json')
+        self.assertEqual(Scrape.objects.get().<field>.<attr>, "<before_value>")
 
-    def test_delete_scrape(self):
-        """Tests the scrape-detail endpoint for the deletion of
-        a single entry using the DELETE method.
-        """
-        post_url = reverse('scrape-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = Scrape.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        request = self.factory.delete('scrape-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
+        scrape_pk = str(Scrape.objects.get().scrape_id)
+
+        data = {
+            scrape_date:DateField,
+            entries_scraped:IntegerField,
+            scrape_duration:DurationField,
+            scrape_success:BooleanField,
+        }
+
+        request = self.factory.put('api/scrapes/', data, format='json')
+        response = self.view(request, pk=scrape_pk)
         response.render()
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Scrape.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Scrape.objects.count(), 1)
+        self.assertEqual(Scrape.objects.get().<field>.<attr>, "<after value>")
 
 
-class TestScrapeJobBoardListCreateAPIView(APITestCase):
+class TestScrapeJobBoardAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse('scrapejobboard-list')
-        """<ADD DATA INSTANCES HERE>"""
+        self.view = ScrapeJobBoardViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'})
+        self.url = ('http://127.0.0.1:8000/api/scrapejobboards/')
+        self.scrape_endpoint = ('http://127.0.0.1:8000/api/scrapes/')
+        self.jobboard_endpoint = ('http://127.0.0.1:8000/api/jobboards/')
 
-    def test_create_scrapejobboards(self):
-        """Tests the scrapejobboard-list endpoint for the creation of
-        a multiple entries using the POST method.
-        """
-        response = self.client.post(self.url,self.<placeholder>,format='json')
-
-        self.assertEqual(ScrapeJobBoard.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.valid_scrapejobboard = {
+            scrape:
+                scrape_date:DateField,
+                entries_scraped:IntegerField,
+                scrape_duration:DurationField,
+                scrape_success:BooleanField,,
+            job_board:
+                jobboard_name:CharField,
+                home_page:URLField,
+                search_page:URLField,,
+        }
 
     def test_create_scrapejobboard(self):
-        """Tests the scrapejobboard-list endpoint for the creation of
-        a single entry using the POST method.
-        """
-        response = self.client.post(self.url, self.<placeholder>, format='json')
+        response = self.client.post(self.url, self.valid_scrapejobboard, format='json')
+        scrape = str(Scrape.objects.get().scrape)
+        job_board = str(JobBoard.objects.get().job_board)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ScrapeJobBoard.objects.get().PLACEHOLDER, self.<placeholder>['PLACEHOLDER'])
+        self.assertEqual(ScrapeJobBoard.objects.count(), 1)
+        self.assertEqual(scrape, '<model __str__ value>')
+        self.assertEqual(job_board, '<model __str__ value>')
 
-
-class TestScrapeJobBoardRetrieveUpdateDestroyAPIView(APITestCase):
-    def setUp(self):
-       self.factory = APIRequestFactory()
-       self.view = ScrapeJobBoardRetrieveUpdateDestroyAPIView.as_view()
-
-    def test_get_single_scrapejobboard(self):
-         """Tests the scrapejobboard-list endpoint for the retrieval of
-        a single entry using the GET method.
-        """
-        post_url = reverse('scrapejobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = ScrapeJobBoard.objects.get(PLACEHOLDER='<placeholder>')
-
-        request = self.factory.get('scrapejobboard-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
-        response.render()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
 
     def test_update_scrapejobboard(self):
-        """Tests the scrapejobboard-detail endpoint for the update of
-        a single entry using the PUT method.
-        """
-        post_url = reverse('scrapejobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        saved = ScrapeJobBoard.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        edited = <placeholder>
-        put_url = reverse('scrapejobboard-detail', <kwargs=PLACEHOLDER: saved.PLACEHOLDER>)
-        response = self.client.put(put_url, edited)
-        response_data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
+        post = self.client.post(self.url, self.valid_scrapejobboard, format='json')
+        self.assertEqual(ScrapeJobBoard.objects.get().<field>.<attr>, "<before_value>")
 
-    def test_delete_scrapejobboard(self):
-        """Tests the scrapejobboard-detail endpoint for the deletion of
-        a single entry using the DELETE method.
-        """
-        post_url = reverse('scrapejobboard-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = ScrapeJobBoard.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        request = self.factory.delete('scrapejobboard-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
+        scrapejobboard_pk = str(ScrapeJobBoard.objects.get().scrapejobboard_id)
+        scrape_pk = str(Scrape.objects.get().scrape_id)
+        job_board_pk = str(JobBoard.objects.get().job_board_id)
+
+        data = {
+            scrapejobboard_id:scrapejobboard,
+            scrape:                
+                scrape_date:DateField,
+                entries_scraped:IntegerField,
+                scrape_duration:DurationField,
+                scrape_success:BooleanField,,
+            job_board:                
+                jobboard_name:CharField,
+                home_page:URLField,
+                search_page:URLField,,
+        }
+
+        request = self.factory.put('api/scrapejobboards/', data, format='json')
+        response = self.view(request, pk=scrapejobboard_pk)
         response.render()
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(ScrapeJobBoard.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Scrape.objects.count(), 1)
+        self.assertEqual(JobBoard.objects.count(), 1)
+        self.assertEqual(ScrapeJobBoard.objects.count(), 1)
+        self.assertEqual(ScrapeJobBoard.objects.get().<field>.<attr>, "<after value>")
 
 
-class TestJobBoardListingTagListCreateAPIView(APITestCase):
+class TestJobBoardListingTagAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse('jobboardlistingtag-list')
-        """<ADD DATA INSTANCES HERE>"""
+        self.view = JobBoardListingTagViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'})
+        self.url = ('http://127.0.0.1:8000/api/jobboardlistingtags/')
+        self.jobboard_endpoint = ('http://127.0.0.1:8000/api/jobboards/')
+        self.listingtag_endpoint = ('http://127.0.0.1:8000/api/listingtags/')
 
-    def test_create_jobboardlistingtags(self):
-        """Tests the jobboardlistingtag-list endpoint for the creation of
-        a multiple entries using the POST method.
-        """
-        response = self.client.post(self.url,self.<placeholder>,format='json')
-
-        self.assertEqual(JobBoardListingTag.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.valid_jobboardlistingtag = {
+            job_board:
+                jobboard_name:CharField,
+                home_page:URLField,
+                search_page:URLField,,
+            listing_tag:
+                listingtag_name:CharField,,
+        }
 
     def test_create_jobboardlistingtag(self):
-        """Tests the jobboardlistingtag-list endpoint for the creation of
-        a single entry using the POST method.
-        """
-        response = self.client.post(self.url, self.<placeholder>, format='json')
+        response = self.client.post(self.url, self.valid_jobboardlistingtag, format='json')
+        job_board = str(JobBoard.objects.get().job_board)
+        listing_tag = str(ListingTag.objects.get().listing_tag)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(JobBoardListingTag.objects.get().PLACEHOLDER, self.<placeholder>['PLACEHOLDER'])
+        self.assertEqual(JobBoardListingTag.objects.count(), 1)
+        self.assertEqual(job_board, '<model __str__ value>')
+        self.assertEqual(listing_tag, '<model __str__ value>')
 
-
-class TestJobBoardListingTagRetrieveUpdateDestroyAPIView(APITestCase):
-    def setUp(self):
-       self.factory = APIRequestFactory()
-       self.view = JobBoardListingTagRetrieveUpdateDestroyAPIView.as_view()
-
-    def test_get_single_jobboardlistingtag(self):
-         """Tests the jobboardlistingtag-list endpoint for the retrieval of
-        a single entry using the GET method.
-        """
-        post_url = reverse('jobboardlistingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = JobBoardListingTag.objects.get(PLACEHOLDER='<placeholder>')
-
-        request = self.factory.get('jobboardlistingtag-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
-        response.render()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
 
     def test_update_jobboardlistingtag(self):
-        """Tests the jobboardlistingtag-detail endpoint for the update of
-        a single entry using the PUT method.
-        """
-        post_url = reverse('jobboardlistingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        saved = JobBoardListingTag.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        edited = <placeholder>
-        put_url = reverse('jobboardlistingtag-detail', <kwargs=PLACEHOLDER: saved.PLACEHOLDER>)
-        response = self.client.put(put_url, edited)
-        response_data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')
+        post = self.client.post(self.url, self.valid_jobboardlistingtag, format='json')
+        self.assertEqual(JobBoardListingTag.objects.get().<field>.<attr>, "<before_value>")
 
-    def test_delete_jobboardlistingtag(self):
-        """Tests the jobboardlistingtag-detail endpoint for the deletion of
-        a single entry using the DELETE method.
-        """
-        post_url = reverse('jobboardlistingtag-list')
-        post_request = self.client.post(post_url, self.<placeholder>, format='json')
-        a = JobBoardListingTag.objects.get(PLACEHOLDER=self.<placeholder>['PLACEHOLDER'])
-        request = self.factory.delete('jobboardlistingtag-detail')
-        response = self.view(request, PLACEHOLDER=a.PLACEHOLDER)
+        jobboardlistingtag_pk = str(JobBoardListingTag.objects.get().jobboardlistingtag_id)
+        job_board_pk = str(JobBoard.objects.get().job_board_id)
+        listing_tag_pk = str(ListingTag.objects.get().listing_tag_id)
+
+        data = {
+            jobboardlistingtag_id:jobboardlistingtag,
+            job_board:                
+                jobboard_name:CharField,
+                home_page:URLField,
+                search_page:URLField,,
+            listing_tag:                
+                listingtag_name:CharField,,
+        }
+
+        request = self.factory.put('api/jobboardlistingtags/', data, format='json')
+        response = self.view(request, pk=jobboardlistingtag_pk)
         response.render()
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(JobBoardListingTag.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(JobBoard.objects.count(), 1)
+        self.assertEqual(ListingTag.objects.count(), 1)
+        self.assertEqual(JobBoardListingTag.objects.count(), 1)
+        self.assertEqual(JobBoardListingTag.objects.get().<field>.<attr>, "<after value>")
 
 

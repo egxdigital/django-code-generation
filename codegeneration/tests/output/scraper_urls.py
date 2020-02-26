@@ -1,45 +1,13 @@
 from django.urls import path
-from scraper.api import views
+from rest_framework.routers import SimpleRouter
+from scraper.api.views import JobBoardViewSet, ListingTagViewSet, ScrapeViewSet, ScrapeJobBoardViewSet, JobBoardListingTagViewSet
 
-urlpatterns = [
-    path('api/jobboards/',
-        views.JobBoardListCreateAPIView.as_view(),
-        name='jobboard-list'),
 
-    path('api/jobboard/<PLACEHOLDER>/',
-        views.JobBoardRetrieveUpdateDestroyAPIView.as_view(),
-        name='jobboard-detail'),
+router = SimpleRouter()
+router.register('api/jobboards)', JobBoardViewSet)
+router.register('api/listingtags)', ListingTagViewSet)
+router.register('api/scrapes)', ScrapeViewSet)
+router.register('api/scrapejobboards)', ScrapeJobBoardViewSet)
+router.register('api/jobboardlistingtags)', JobBoardListingTagViewSet)
 
-    path('api/listingtags/',
-        views.ListingTagListCreateAPIView.as_view(),
-        name='listingtag-list'),
-
-    path('api/listingtag/<PLACEHOLDER>/',
-        views.ListingTagRetrieveUpdateDestroyAPIView.as_view(),
-        name='listingtag-detail'),
-
-    path('api/scrapes/',
-        views.ScrapeListCreateAPIView.as_view(),
-        name='scrape-list'),
-
-    path('api/scrape/<PLACEHOLDER>/',
-        views.ScrapeRetrieveUpdateDestroyAPIView.as_view(),
-        name='scrape-detail'),
-
-    path('api/scrapejobboards/',
-        views.ScrapeJobBoardListCreateAPIView.as_view(),
-        name='scrapejobboard-list'),
-
-    path('api/scrapejobboard/<PLACEHOLDER>/',
-        views.ScrapeJobBoardRetrieveUpdateDestroyAPIView.as_view(),
-        name='scrapejobboard-detail'),
-
-    path('api/jobboardlistingtags/',
-        views.JobBoardListingTagListCreateAPIView.as_view(),
-        name='jobboardlistingtag-list'),
-
-    path('api/jobboardlistingtag/<PLACEHOLDER>/',
-        views.JobBoardListingTagRetrieveUpdateDestroyAPIView.as_view(),
-        name='jobboardlistingtag-detail'),
-
-]
+urlpatterns = router.urls
