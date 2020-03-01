@@ -4,10 +4,10 @@ from jobsdatabucket.api.views import JobPostViewSet, JobPostCompanyViewSet, JobP
 
 
 router = SimpleRouter()
-router.register('api/jobposts)', JobPostViewSet)
-router.register('api/jobpostcompanies)', JobPostCompanyViewSet)
-router.register('api/jobpostlistingtags)', JobPostListingTagViewSet)
-router.register('api/jobpostscrapes)', JobPostScrapeViewSet)
-router.register('api/jobposttechnologies)', JobPostTechnologyViewSet)
+router.register('api/jobposts', JobPostViewSet)
+router.register('api/jobpostcompanies', JobPostCompanyViewSet)
+router.register('api/jobpostlistingtags', JobPostListingTagViewSet)
+router.register('api/jobpostscrapes', JobPostScrapeViewSet)
+router.register('api/jobposttechnologies', JobPostTechnologyViewSet)
 
 urlpatterns = router.urls

@@ -69,7 +69,7 @@ models_model_str_foreignkeys = (
 
 
 urls_register_router = (
-    "router.register('api/{plural_model})', {Model}ViewSet)\n"
+    "router.register('api/{plural_model}', {Model}ViewSet)\n"
 )
 
 urls_router_skeleton = (
@@ -110,33 +110,111 @@ api_serializers_head = (
     "from {djangoapp}.models import {Models}\n\n"
 )
 
+api_serializers_nested_object = (
+    "    {field} = {Field}Serializer()\n"
+)
+
 
 api_serializers_nested_objects = (
     "class {Model}Serializer(serializers.ModelSerializer):\n"
-    "{nestedObjects}\n\n"
-    "class Meta:\n"
-    "    model = {Model}\n"
-    "    fields = '__all__'\n\n"
+    "{nestedObjects}\n"
+    "    class Meta:\n"
+    "        model = {Model}\n"
+    "        fields = '__all__'\n\n"
 )
 
 api_serializers = (
     "class {Model}Serializer(serializers.ModelSerializer):\n"
-    "class Meta:\n"
-    "    model = {Model}\n"
-    "    fields = '__all__'\n"
+    "    class Meta:\n"
+    "        model = {Model}\n"
+    "        fields = '__all__'\n\n"
+)
+
+api_nested_data_pop = (
+    "        {field}_data = validated_data.pop('{field}')\n"
+)
+
+api_nested_try_block = (
+    "        try:\n"
+    "            {field}_instance = {Field}.objects.get(<chosen_field>={field}_data['<chosen_field>'])\n"
+    "        except ObjectDoesNotExist:\n"
+    "            {field}_instance = {Field}.objects.create(**{field}_data)\n\n"
+)
+
+api_create_with_nested = (
+    "                        {field}={field}_instance,\n"
 )
 
 api_override_create = (
-    ""
+    "    def create(self, validated_data):\n"
+    "{nestedData}"
+    "\n"
+    "{nestedTryBlocks}"
+    "\n"
+    "        {model}_instance = {Model}.objects.create(\n"
+    "{nestedInstances}"
+    "                        **validated_data\n"
+    "                        )\n"
+    "        return {model}_instance\n\n"
+)
+
+
+api_validated_field = (
+    "        {field}_data = validated_data.get('{field}', instance.{field})\n"
+)
+
+api_instance_field = (
+    "        {field} = instance.{field}\n"
+)
+
+api_instance_save = (
+    "        {field}.save()\n"
+)
+
+api_instance_field_get = (
+    "        {field}.{attr} = {field}_data.get(\n"
+    "            '{attr}',\n"
+    "            {field}.{attr}\n"
+    "        )\n"
+)
+
+api_override_update = (
+    "    def update(self, instance, validated_data):\n"
+    "{validatedData}"
+    "\n"
+    "{instanceFields}"
+    "\n"
+    "{instanceFieldGets}"
+    "\n"
+    "{instanceSaves}"
+    "        instance.save()\n"
+    "        return instance\n\n"
+)
+
+
+api_views_head = (
+    "\"\"\"Views - {djangoapp}\n"
+    "This module contains the views for the {djangoapp} application.\n\n"
+    "\"\"\"\n"
+    "from rest_framework import generics\n"
+    "from rest_framework import viewsets\n"
+    "from rest_framework.permissions import IsAuthenticated, AllowAny\n"
+    "from rest_framework.decorators import authentication_classes, permission_classes\n"
+    "from {djangoapp}.models import {Models}\n"
+    "from {djangoapp}.api.serializers import {Serializers}\n\n"
+)
+
+api_views_model_viewset = (
+    "@permission_classes((AllowAny, ))\n"
+    "class {Model}ViewSet(viewsets.ModelViewSet):\n"
+    "    queryset = {Model}.objects.all()\n"
+    "    serializer_class = {Model}Serializer\n\n\n"
 )
 
 
 test_models_head = (
-    "\"\"\"Models - {djangoapp}\n"
-    "This module contains the models for the {djangoapp} application.\n\n"
-    "Notes\n"
-    "-----\n"
-    "    Custom IDs are applied to each model using Python's uuid library\n"
+    "\"\"\"Test Models - {djangoapp}\n"
+    "This module contains the tests for the {djangoapp} models.\n\n"
     "\"\"\"\n"
     "from django.db import models\n"
     "import uuid\n"
@@ -197,7 +275,7 @@ test_models_test_foreign_key = (
 
 
 test_api_head = (
-    "\"\"\"Test API\n\n"
+    "\"\"\"Test API\n"
     "This module cointains the test cases for the API views of the {djangoapp}\n"
     "Django application.\n\n"
     "Examples\n"
@@ -206,7 +284,7 @@ test_api_head = (
     "import pprint, time, pytz, json, datetime\n"
     "from django.urls import reverse\n"
     "from rest_framework import status\n"
-    "from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient\n"
+    "from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient\n"
     "from {djangoapp}.models import {Models}\n"
     "from {djangoapp}.api.serializers import {Serializers}\n"
     "from {djangoapp}.api.views import {Views}\n\n"
@@ -215,29 +293,38 @@ test_api_head = (
 
 test_api_flat_model_json_key_value = (
     "\n"
-    "                {field}:{defaultVal},"
+    "                \"{field}\":\"{defaultVal}\","
 )
 
 test_api_updated_json_key_value = (
-    "            {modeluuidfield}:{model},\n"
+    "            \"{modeluuidfield}\":{model}_pk,\n"
     "{fields}"
 )
 
+test_api_nested_valid_data = (
+    "            \"{nested}\":{{"
+    "                {fields}"
+    "\n"
+    "               }},\n"
+)
+
 test_api_updated_json_key = (
-    "            {nested}:"
-    "                {fields},\n"
+    "            \"{nested}\":{{"
+    "                {fields}"
+    "\n"
+    "               }},\n"
 )
 
 test_api_json_key_value_line = (
-    "            {field}:{defaultVal},\n"
+    "            \"{field}\":\"{defaultVal}\",\n"
 )
 
 test_api_assert_forignkey_object_counts = (
     "        self.assertEqual({ForeignkeyModel}.objects.count(), 1)\n"
 )
 
-test_api_forignkey_object_get = (
-    "        {foreignkey} = str({ForeignkeyModel}.objects.get().{foreignkey})\n"
+test_api_foreignkey_object_get = (
+    "        {foreignkey} = str({Model}.objects.get().{foreignkey})\n"
 )
 
 test_api_assert_nested_object = (
@@ -265,7 +352,7 @@ test_api_view_nested_model = (
     "{nestedEndpoints}"
     "\n"
     "        self.valid_{model} = {{\n"
-    "{fields}"
+    "{validFields}"
     "        }}\n\n"
     "    def test_create_{model}(self):\n"
     "        response = self.client.post(self.url, self.valid_{model}, format='json')\n"
@@ -359,7 +446,6 @@ test_api_retrieve_update = (
     "        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)\n"
     "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )
-
 
 if __name__ == '__main__':
     thing = test_models_test_field

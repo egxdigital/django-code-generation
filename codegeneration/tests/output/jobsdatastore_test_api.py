@@ -1,3 +1,21 @@
+"""Test API
+This module cointains the test cases for the API views of the jobsdatastore
+Django application.
+
+Examples
+    python manage.py test --pattern="test_*" jobsdatastore.tests
+
+"""
+import pprint, time, pytz, json, datetime
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient
+from jobsdatastore.models import Company, Technology, CompanyTechnology
+from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer, CompanyTechnologySerializer
+from jobsdatastore.api.views import CompanyViewSet, TechnologyViewSet, CompanyTechnologyViewSet
+
+client = RequestsClient()
+
 class TestCompanyAPIView(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -5,8 +23,8 @@ class TestCompanyAPIView(APITestCase):
         self.url = ('http://127.0.0.1:8000/api/companies/')
 
         self.valid_company = {
-            company_name:CharField,
-            hiring_from:CharField,
+            "company_name":"CharField",
+            "hiring_from":"CharField",
         }
 
     def test_create_company(self):
@@ -23,8 +41,8 @@ class TestCompanyAPIView(APITestCase):
         company_pk = str(Company.objects.get().company_id)
 
         data = {
-            company_name:CharField,
-            hiring_from:CharField,
+            "company_name":"CharField",
+            "hiring_from":"CharField",
         }
 
         request = self.factory.put('api/companies/', data, format='json')
@@ -43,7 +61,7 @@ class TestTechnologyAPIView(APITestCase):
         self.url = ('http://127.0.0.1:8000/api/technologies/')
 
         self.valid_technology = {
-            technology_name:CharField,
+            "technology_name":"CharField",
         }
 
     def test_create_technology(self):
@@ -60,7 +78,7 @@ class TestTechnologyAPIView(APITestCase):
         technology_pk = str(Technology.objects.get().technology_id)
 
         data = {
-            technology_name:CharField,
+            "technology_name":"CharField",
         }
 
         request = self.factory.put('api/technologies/', data, format='json')
@@ -81,18 +99,19 @@ class TestCompanyTechnologyAPIView(APITestCase):
         self.technology_endpoint = ('http://127.0.0.1:8000/api/technologies/')
 
         self.valid_companytechnology = {
-            company:
-                company_name:CharField,
-                hiring_from:CharField,,
-            technology:
-                technology_name:CharField,,
-            companytechnology_date_created:DateField,
+            "company":{                
+                "company_name":"CharField",
+                "hiring_from":"CharField",
+               },
+            "technology":{                
+                "technology_name":"CharField",
+               },
         }
 
     def test_create_companytechnology(self):
         response = self.client.post(self.url, self.valid_companytechnology, format='json')
-        company = str(Company.objects.get().company)
-        technology = str(Technology.objects.get().technology)
+        company = str(CompanyTechnology.objects.get().company)
+        technology = str(CompanyTechnology.objects.get().technology)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(CompanyTechnology.objects.count(), 1)
@@ -109,12 +128,14 @@ class TestCompanyTechnologyAPIView(APITestCase):
         technology_pk = str(Technology.objects.get().technology_id)
 
         data = {
-            companytechnology_id:companytechnology,
-            company:                
-                company_name:CharField,
-                hiring_from:CharField,,
-            technology:                
-                technology_name:CharField,,
+            "companytechnology_id":companytechnology_pk,
+            "company":{                
+                "company_name":"CharField",
+                "hiring_from":"CharField",
+               },
+            "technology":{                
+                "technology_name":"CharField",
+               },
         }
 
         request = self.factory.put('api/companytechnologies/', data, format='json')
