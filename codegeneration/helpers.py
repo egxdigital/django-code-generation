@@ -13,6 +13,7 @@ def helper_remove_underscore(inp):
         return ''.join(inp.split('_'))
     return inp
 
+
 def helper_pluralize(inp):
     """Takes a string and returns the plural form.
     Assumes that there are only two plural forms
@@ -99,9 +100,9 @@ def helper_prepare_test_models_py(appname, models, dest):
 
     Parameters
     ----------
-    appname : type
+    appname : str
         Description of parameter `appname`.
-    models : type
+    models : dict
         Description of parameter `models`.
     dest : type
         Description of parameter `dest`.

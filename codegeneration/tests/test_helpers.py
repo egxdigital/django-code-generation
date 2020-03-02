@@ -39,6 +39,5 @@ class TestHelpers(unittest.TestCase):
         f = helper_return_filepath('models', 'JobBoard', self.test_output_dir)
         self.assertEqual(f, self.valid_filepath)
 
-
 if __name__ == '__main__':
     unittest.main()
