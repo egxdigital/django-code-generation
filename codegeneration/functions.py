@@ -224,7 +224,7 @@ def write_testcases_to_test_api_files(output_directory):
         app = django_model_objects[M].djangoapp
         filepath = helper_return_filepath('test_api', app, output_directory)
 
-        helper_append_contents_to_file((test_api_view_nested_model.format(
+        helper_append_contents_to_file((test_api_view.format(
                         model=M.lower(),
                         Model=M,
                         nestedEndpoints=models_nestedEndpoints[M],

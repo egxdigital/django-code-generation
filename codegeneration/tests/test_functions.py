@@ -62,29 +62,36 @@ class TestGenerateUrls(unittest.TestCase):
         self.jobsdatastore = ('jobsdatastore', self.src2)
         self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
+        self._prepare_output_directory()
+        dir = self.test_output_dir
+        generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+
     def test_apps_models(self):
         self._prepare_output_directory()
         generate_urls_py_files(self.models, self.test_output_dir, urls_router_skeleton, urls_register_router)
-        self.assertEqual(apps_models, self.valid_apps_models)
+        #self.assertEqual(apps_Models, self.valid_apps_models)
 
     def test_generate_api(self):
         self._prepare_output_directory()
         generate_api(self.valid_apps_models, self.test_output_dir)
 
     def test_viewset_builder(self):
-        self._prepare_output_directory()
-        dir = self.test_output_dir
-        generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
-
-        for app in apps_models.keys():
+        for app in apps_Models.keys():
             #print (app)
-            listOfModels = apps_models[app]
+            listOfModels = apps_Models[app]
             viewSets = []
             for model in listOfModels:
                 #print ('\t', model)
                 viewSets += ["{}ViewSet".format(model)]
 
             apps_ViewSets[app] = ", ".join(viewSets)
+
+    def test_generate_serializers(self):
+        set_up_import_statements(apps_Models)
+        generate_serializers_py_files(self.test_output_dir)
+
+
+
 
 
 if __name__ == '__main__':

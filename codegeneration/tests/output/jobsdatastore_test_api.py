@@ -33,6 +33,17 @@ class TestCompanyAPIView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Company.objects.count(), 1)
 
+    def test_get_single_company(self):
+        post_response = self.client.post(self.url, self.valid_company, format='json')
+
+        instance = Company.objects.get(<field>='<value>')
+
+        request = self.factory.get(self.url+str(instance.pk))
+        response = self.view(request, <field>=instance.<field>)
+        response.render()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))
 
     def test_update_company(self):
         post = self.client.post(self.url, self.valid_company, format='json')
@@ -53,6 +64,16 @@ class TestCompanyAPIView(APITestCase):
         self.assertEqual(Company.objects.count(), 1)
         self.assertEqual(Company.objects.get().<field>.<attr>, "<after value>")
 
+    def test_delete_company(self):
+        post = self.client.post(self.url, self.valid_company, format='json')
+
+        instance = Company.objects.get(<nestedObject>=<value>)
+
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'})
+
+        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Company.objects.count(), 0)
+
 
 class TestTechnologyAPIView(APITestCase):
     def setUp(self):
@@ -70,6 +91,17 @@ class TestTechnologyAPIView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Technology.objects.count(), 1)
 
+    def test_get_single_technology(self):
+        post_response = self.client.post(self.url, self.valid_technology, format='json')
+
+        instance = Technology.objects.get(<field>='<value>')
+
+        request = self.factory.get(self.url+str(instance.pk))
+        response = self.view(request, <field>=instance.<field>)
+        response.render()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))
 
     def test_update_technology(self):
         post = self.client.post(self.url, self.valid_technology, format='json')
@@ -88,6 +120,16 @@ class TestTechnologyAPIView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Technology.objects.count(), 1)
         self.assertEqual(Technology.objects.get().<field>.<attr>, "<after value>")
+
+    def test_delete_technology(self):
+        post = self.client.post(self.url, self.valid_technology, format='json')
+
+        instance = Technology.objects.get(<nestedObject>=<value>)
+
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'})
+
+        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Technology.objects.count(), 0)
 
 
 class TestCompanyTechnologyAPIView(APITestCase):
@@ -118,6 +160,19 @@ class TestCompanyTechnologyAPIView(APITestCase):
         self.assertEqual(company, '<model __str__ value>')
         self.assertEqual(technology, '<model __str__ value>')
 
+    def test_get_single_companytechnology(self):
+        post_response = self.client.post(self.url, self.valid_companytechnology, format='json')
+        company_pk = str(Company.objects.get().company_id)
+        technology_pk = str(Technology.objects.get().technology_id)
+
+        instance = CompanyTechnology.objects.get(<field>='<value>')
+
+        request = self.factory.get(self.url+str(instance.pk))
+        response = self.view(request, <field>=instance.<field>)
+        response.render()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))
 
     def test_update_companytechnology(self):
         post = self.client.post(self.url, self.valid_companytechnology, format='json')
@@ -147,5 +202,17 @@ class TestCompanyTechnologyAPIView(APITestCase):
         self.assertEqual(Technology.objects.count(), 1)
         self.assertEqual(CompanyTechnology.objects.count(), 1)
         self.assertEqual(CompanyTechnology.objects.get().<field>.<attr>, "<after value>")
+
+    def test_delete_companytechnology(self):
+        post = self.client.post(self.url, self.valid_companytechnology, format='json')
+        company_pk = str(Company.objects.get().company_id)
+        technology_pk = str(Technology.objects.get().technology_id)
+
+        instance = CompanyTechnology.objects.get(<nestedObject>=<value>)
+
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'})
+
+        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(CompanyTechnology.objects.count(), 0)
 
 

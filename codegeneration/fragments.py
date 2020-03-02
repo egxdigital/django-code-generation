@@ -23,22 +23,16 @@ URLs
     urls_skeleton
     urls_url_pattern
 
-Notes
------
-    Is this module necessary?
-    This module was created provisionally, to support a task.
-    It may become a part of the project.
-
 """
 
 admin_head = (
     "from django.contrib import admin\n"
-    "from scraper.models import {modelList}\n\n"
+    "from {djangoapp}.models import {Models}\n\n"
 )
 
 admin_class = {
-    "@admin.register(JobBoard)\n"
-    "class JobBoardAdmin(admin.ModelAdmin):\n"
+    "@admin.register({Model})\n"
+    "class {Model}Admin(admin.ModelAdmin):\n"
     "    pass"
 }
 
@@ -291,6 +285,14 @@ test_api_head = (
     "client = RequestsClient()\n\n"
 )
 
+test_api_get_single = (
+
+)
+
+test_api_delete = (
+
+)
+
 test_api_flat_model_json_key_value = (
     "\n"
     "                \"{field}\":\"{defaultVal}\","
@@ -343,7 +345,7 @@ test_api_nested_endpoint = (
     "        self.{nested}_endpoint = ('http://127.0.0.1:8000/api/{plural_nested}/')\n"
 )
 
-test_api_view_nested_model = (
+test_api_view = (
     "class Test{Model}APIView(APITestCase):\n"
     "    def setUp(self):\n"
     "        self.factory = APIRequestFactory()\n"
@@ -360,7 +362,17 @@ test_api_view_nested_model = (
     "\n"
     "        self.assertEqual(response.status_code, status.HTTP_201_CREATED)\n"
     "        self.assertEqual({Model}.objects.count(), 1)\n"
-    "{assertNestedObjects}\n\n"
+    "{assertNestedObjects}\n"
+    "    def test_get_single_{model}(self):\n"
+    "        post_response = self.client.post(self.url, self.valid_{model}, format='json')\n"
+    "{nestedObject_pks}"
+    "\n"
+    "        instance = {Model}.objects.get(<field>='<value>')\n\n"
+    "        request = self.factory.get(self.url+str(instance.pk))\n"
+    "        response = self.view(request, <field>=instance.<field>)\n"
+    "        response.render()\n\n"
+    "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
+    "        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))\n\n"
     "    def test_update_{model}(self):\n"
     "        post = self.client.post(self.url, self.valid_{model}, format='json')\n"
     "        self.assertEqual({Model}.objects.get().<field>.<attr>, \"<before_value>\")\n\n"
@@ -376,7 +388,15 @@ test_api_view_nested_model = (
     "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
     "{assert_nested_object_counts}"
     "        self.assertEqual({Model}.objects.count(), 1)\n"
-    "        self.assertEqual({Model}.objects.get().<field>.<attr>, \"<after value>\")\n\n\n"
+    "        self.assertEqual({Model}.objects.get().<field>.<attr>, \"<after value>\")\n\n"
+    "    def test_delete_{model}(self):\n"
+    "        post = self.client.post(self.url, self.valid_{model}, format='json')\n"
+    "{nestedObject_pks}"
+    "\n"
+    "        instance = {Model}.objects.get(<nestedObject>=<value>)\n\n"
+    "        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={{'<field>':'<value>'}})\n\n"
+    "        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)\n"
+    "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )
 
 
