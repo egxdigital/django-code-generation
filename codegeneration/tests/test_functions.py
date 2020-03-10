@@ -64,16 +64,7 @@ class TestGenerateUrls(unittest.TestCase):
 
         self._prepare_output_directory()
         dir = self.test_output_dir
-        generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
-
-    def test_apps_models(self):
-        self._prepare_output_directory()
-        generate_urls_py_files(self.models, self.test_output_dir, urls_router_skeleton, urls_register_router)
-        #self.assertEqual(apps_Models, self.valid_apps_models)
-
-    def test_generate_api(self):
-        self._prepare_output_directory()
-        generate_api(self.valid_apps_models, self.test_output_dir)
+        generate_code(dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
 
     def test_viewset_builder(self):
         for app in apps_Models.keys():
@@ -86,13 +77,12 @@ class TestGenerateUrls(unittest.TestCase):
 
             apps_ViewSets[app] = ", ".join(viewSets)
 
-    def test_generate_serializers(self):
-        set_up_import_statements(apps_Models)
-        generate_serializers_py_files(self.test_output_dir)
-
-
-
-
+    def test_print_dict(self):
+        self._prepare_output_directory()
+        dir = self.test_output_dir
+        generate_code(dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+        generate_models_files(self.test_output_dir, apps_Models, django_model_objects)
+        generate_test_models_files(self.test_output_dir, apps_Models, django_model_objects)
 
 if __name__ == '__main__':
     unittest.main()

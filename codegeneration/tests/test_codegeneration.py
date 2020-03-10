@@ -14,21 +14,6 @@ from codegeneration.functions import *
 
 class TestCodeGeneration(unittest.TestCase):
 
-    def _prepare_output_directory(self):
-        """Deletes any existing files in test output"""
-        dir = self.test_output_dir
-        filepaths = [os.path.join(dir,f) for f in listdir(dir) if isfile(join(dir, f))]
-
-        if len(filepaths) == 0:
-            return
-
-        for file in filepaths:
-            try:
-                os.unlink(file)
-            except Exception as e:
-                print ("tearDown: {} on\n {}".format(e, file))
-
-
     def setUp(self):
         self.Diff = None
         self.current_directory = os.path.dirname( __file__ )
@@ -46,6 +31,20 @@ class TestCodeGeneration(unittest.TestCase):
         self._prepare_output_directory()
         dir = self.test_output_dir
         generate_code(self.test_output_dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+
+    def _prepare_output_directory(self):
+        """Deletes any existing files in test output"""
+        dir = self.test_output_dir
+        filepaths = [os.path.join(dir,f) for f in listdir(dir) if isfile(join(dir, f))]
+
+        if len(filepaths) == 0:
+            return
+
+        for file in filepaths:
+            try:
+                os.unlink(file)
+            except Exception as e:
+                print ("tearDown: {} on\n {}".format(e, file))
 
     """
     def tearDown(self):
