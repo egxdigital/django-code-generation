@@ -70,6 +70,11 @@ def helper_return_camel_case_foreign_key_modelname(inp):
         return res
 
 
+def helper_write_contents_to_file(contents, file):
+    with open(file, 'w+') as fd:
+        fd.write(contents)
+
+
 def helper_append_contents_to_file(contents, file):
     with open(file, 'a') as fd:
         fd.write(contents)
@@ -118,7 +123,7 @@ def helper_prepare_test_models_py(appname, models, dest):
         contents = testpy.read()
 
     with open(dest, 'w') as testpy:
-        testpy.write('from django.test import TestCase\nimport datetime\nfrom model_mommy import mommy\n')
+        testpy.write('import datetime\nfrom django.test import TestCase\nfrom model_mommy import mommy\n')
         testpy.write('from {}.models import {}\n'.format(appname, ','.join(models.values())))
         testpy.write(contents)
 
@@ -149,7 +154,7 @@ def helper_return_filepath(inp, djangoapp, dir):
 
 def helper_return_models_files(djangoapp, dir):
     """Takes Django app name and destination directory
-    and returns a filepath as a string
+    and returns a tuple containing two filepaths
 
     Parameters
     ----------
