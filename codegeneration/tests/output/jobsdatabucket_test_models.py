@@ -1,182 +1,284 @@
-from django.test import TestCase
+"""Test Models - jobsdatabucket
+
+This module contains the tests for the jobsdatabucket models.
+"""
+import uuid
 import datetime
+from django.db import models
 from model_mommy import mommy
-from jobsdatabucket.models import JobPost,JobPostCompany,JobPostListingTag,JobPostScrape,JobPostTechnology
+from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
 
 class JobPostTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "job_title":"CharField",
+            "date_posted":"DateField",
+            "apply_link":"URLField",
+            "job_description":"CharField",
+        }
+
+        self.instance = mommy.make(
+           JobPost,
+           jobpost_id = self.data['jobpost_id']
+           job_title = self.data['job_title']
+           date_posted = self.data['date_posted']
+           apply_link = self.data['apply_link']
+           job_description = self.data['job_description']
+        )
+
     def test_is_instance(self):
-        thing = mommy.make(JobPost)
-        self.assertTrue(isinstance(thing, JobPost))
+        self.assertTrue(isinstance(self.instance, JobPost))
 
-    def test_fields_jobpost_id(self):
-        pass
+    def test_fields_jobpost_jobpost_id(self):
+        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        self.assertEqual(record.jobpost_id, self.instance.jobpost_id)
 
-    def test_fields_job_title(self):
-        jobpost = JobPost()
-        <placeholder>
-        jobpost.job_title = <placeholder>
-        jobpost.save()
-        record = JobPost.objects.get(job_title=<placeholder>)
-        self.assertEqual(record.job_title, <placeholder>)
+    def test_fields_jobpost_job_title(self):
+        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        self.assertEqual(record.job_title, self.instance.job_title)
 
-    def test_fields_date_posted(self):
-        jobpost = JobPost()
-        <placeholder>
-        jobpost.date_posted = <placeholder>
-        jobpost.save()
-        record = JobPost.objects.get(date_posted=<placeholder>)
-        self.assertEqual(record.date_posted, <placeholder>)
+    def test_fields_jobpost_date_posted(self):
+        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        self.assertEqual(record.date_posted, self.instance.date_posted)
 
-    def test_fields_apply_link(self):
-        jobpost = JobPost()
-        <placeholder>
-        jobpost.apply_link = <placeholder>
-        jobpost.save()
-        record = JobPost.objects.get(apply_link=<placeholder>)
-        self.assertEqual(record.apply_link, <placeholder>)
+    def test_fields_jobpost_apply_link(self):
+        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        self.assertEqual(record.apply_link, self.instance.apply_link)
 
-    def test_fields_job_description(self):
-        jobpost = JobPost()
-        <placeholder>
-        jobpost.job_description = <placeholder>
-        jobpost.save()
-        record = JobPost.objects.get(job_description=<placeholder>)
-        self.assertEqual(record.job_description, <placeholder>)
-
+    def test_fields_jobpost_job_description(self):
+        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        self.assertEqual(record.job_description, self.instance.job_description)
 
 
 class JobPostCompanyTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "job_post":{                
+                "job_title":"CharField",
+                "date_posted":"DateField",
+                "apply_link":"URLField",
+                "job_description":"CharField",
+               },
+            "company":{                
+                "company_name":"CharField",
+                "hiring_from":"CharField",
+               },
+        }
+
+        self.jobpost = JobPost()
+        self.jobpost.job_title = self.data['job_post']['job_title']
+        self.jobpost.date_posted = self.data['job_post']['date_posted']
+        self.jobpost.apply_link = self.data['job_post']['apply_link']
+        self.jobpost.job_description = self.data['job_post']['job_description']
+
+        self.jobpost.save()
+
+        self.company = Company()
+        self.company.company_name = self.data['company']['company_name']
+        self.company.hiring_from = self.data['company']['hiring_from']
+
+        self.company.save()
+
+
     def test_is_instance(self):
-        thing = mommy.make(JobPostCompany)
-        self.assertTrue(isinstance(thing, JobPostCompany))
+        self.assertTrue(isinstance(self.instance, JobPostCompany))
 
-    def test_fields_jobpostcompany_id(self):
-        pass
+    def test_fields_jobpost(self):
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Company.objects.get(company_id=self.company.pk)
 
-    def test_fields_job_post(self):
-        job_post = None()
-        job_post.<placeholder> = <placeholder>
-        job_post.save()
-        <placeholder>
-        <placeholder> = JobPostCompany()
-        <placeholder>.job_post = job_post
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostCompany.objects.get(job_post=<placeholder>)
-        self.assertEqual(record.job_post, <placeholder>)
+        jobpostcompany = JobPostCompany()
+        jobpostcompany.job_post = self.jobpost
+        jobpostcompany.company = self.company
+        jobpostcompany.save()
+
+        record = JobPostCompany.objects.get(jobpost=<placeholder>)
+        self.assertEqual(record.jobpost, self.jobpost)
 
     def test_fields_company(self):
-        company = None()
-        company.<placeholder> = <placeholder>
-        company.save()
-        <placeholder>
-        <placeholder> = JobPostCompany()
-        <placeholder>.company = company
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostCompany.objects.get(company=<placeholder>)
-        self.assertEqual(record.company, <placeholder>)
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Company.objects.get(company_id=self.company.pk)
 
+        jobpostcompany = JobPostCompany()
+        jobpostcompany.job_post = self.jobpost
+        jobpostcompany.company = self.company
+        jobpostcompany.save()
+
+        record = JobPostCompany.objects.get(company=<placeholder>)
+        self.assertEqual(record.company, self.company)
 
 
 class JobPostListingTagTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "job_post":{                
+                "job_title":"CharField",
+                "date_posted":"DateField",
+                "apply_link":"URLField",
+                "job_description":"CharField",
+               },
+            "listing_tag":{                
+                "listingtag_name":"CharField",
+               },
+        }
+
+        self.jobpost = JobPost()
+        self.jobpost.job_title = self.data['job_post']['job_title']
+        self.jobpost.date_posted = self.data['job_post']['date_posted']
+        self.jobpost.apply_link = self.data['job_post']['apply_link']
+        self.jobpost.job_description = self.data['job_post']['job_description']
+
+        self.jobpost.save()
+
+        self.listingtag = ListingTag()
+        self.listingtag.listingtag_name = self.data['listing_tag']['listingtag_name']
+
+        self.listingtag.save()
+
+
     def test_is_instance(self):
-        thing = mommy.make(JobPostListingTag)
-        self.assertTrue(isinstance(thing, JobPostListingTag))
+        self.assertTrue(isinstance(self.instance, JobPostListingTag))
 
-    def test_fields_jobpostlistingtag_id(self):
-        pass
+    def test_fields_jobpost(self):
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = ListingTag.objects.get(listingtag_id=self.listingtag.pk)
 
-    def test_fields_job_post(self):
-        job_post = None()
-        job_post.<placeholder> = <placeholder>
-        job_post.save()
-        <placeholder>
-        <placeholder> = JobPostListingTag()
-        <placeholder>.job_post = job_post
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostListingTag.objects.get(job_post=<placeholder>)
-        self.assertEqual(record.job_post, <placeholder>)
+        jobpostlistingtag = JobPostListingTag()
+        jobpostlistingtag.job_post = self.jobpost
+        jobpostlistingtag.listing_tag = self.listingtag
+        jobpostlistingtag.save()
 
-    def test_fields_listing_tag(self):
-        listing_tag = None()
-        listing_tag.<placeholder> = <placeholder>
-        listing_tag.save()
-        <placeholder>
-        <placeholder> = JobPostListingTag()
-        <placeholder>.listing_tag = listing_tag
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostListingTag.objects.get(listing_tag=<placeholder>)
-        self.assertEqual(record.listing_tag, <placeholder>)
+        record = JobPostListingTag.objects.get(jobpost=<placeholder>)
+        self.assertEqual(record.jobpost, self.jobpost)
 
+    def test_fields_listingtag(self):
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = ListingTag.objects.get(listingtag_id=self.listingtag.pk)
+
+        jobpostlistingtag = JobPostListingTag()
+        jobpostlistingtag.job_post = self.jobpost
+        jobpostlistingtag.listing_tag = self.listingtag
+        jobpostlistingtag.save()
+
+        record = JobPostListingTag.objects.get(listingtag=<placeholder>)
+        self.assertEqual(record.listingtag, self.listingtag)
 
 
 class JobPostScrapeTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "job_post":{                
+                "job_title":"CharField",
+                "date_posted":"DateField",
+                "apply_link":"URLField",
+                "job_description":"CharField",
+               },
+            "scrape":{                
+                "scrape_date":"DateField",
+                "entries_scraped":"IntegerField",
+                "scrape_duration":"DurationField",
+                "scrape_success":"BooleanField",
+               },
+        }
+
+        self.jobpost = JobPost()
+        self.jobpost.job_title = self.data['job_post']['job_title']
+        self.jobpost.date_posted = self.data['job_post']['date_posted']
+        self.jobpost.apply_link = self.data['job_post']['apply_link']
+        self.jobpost.job_description = self.data['job_post']['job_description']
+
+        self.jobpost.save()
+
+        self.scrape = Scrape()
+        self.scrape.scrape_date = self.data['scrape']['scrape_date']
+        self.scrape.entries_scraped = self.data['scrape']['entries_scraped']
+        self.scrape.scrape_duration = self.data['scrape']['scrape_duration']
+        self.scrape.scrape_success = self.data['scrape']['scrape_success']
+
+        self.scrape.save()
+
+
     def test_is_instance(self):
-        thing = mommy.make(JobPostScrape)
-        self.assertTrue(isinstance(thing, JobPostScrape))
+        self.assertTrue(isinstance(self.instance, JobPostScrape))
 
-    def test_fields_jobpostscrape_id(self):
-        pass
+    def test_fields_jobpost(self):
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Scrape.objects.get(scrape_id=self.scrape.pk)
 
-    def test_fields_job_post(self):
-        job_post = None()
-        job_post.<placeholder> = <placeholder>
-        job_post.save()
-        <placeholder>
-        <placeholder> = JobPostScrape()
-        <placeholder>.job_post = job_post
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostScrape.objects.get(job_post=<placeholder>)
-        self.assertEqual(record.job_post, <placeholder>)
+        jobpostscrape = JobPostScrape()
+        jobpostscrape.job_post = self.jobpost
+        jobpostscrape.scrape = self.scrape
+        jobpostscrape.save()
+
+        record = JobPostScrape.objects.get(jobpost=<placeholder>)
+        self.assertEqual(record.jobpost, self.jobpost)
 
     def test_fields_scrape(self):
-        scrape = None()
-        scrape.<placeholder> = <placeholder>
-        scrape.save()
-        <placeholder>
-        <placeholder> = JobPostScrape()
-        <placeholder>.scrape = scrape
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostScrape.objects.get(scrape=<placeholder>)
-        self.assertEqual(record.scrape, <placeholder>)
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Scrape.objects.get(scrape_id=self.scrape.pk)
 
+        jobpostscrape = JobPostScrape()
+        jobpostscrape.job_post = self.jobpost
+        jobpostscrape.scrape = self.scrape
+        jobpostscrape.save()
+
+        record = JobPostScrape.objects.get(scrape=<placeholder>)
+        self.assertEqual(record.scrape, self.scrape)
 
 
 class JobPostTechnologyTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "job_post":{                
+                "job_title":"CharField",
+                "date_posted":"DateField",
+                "apply_link":"URLField",
+                "job_description":"CharField",
+               },
+            "technology":{                
+                "technology_name":"CharField",
+               },
+        }
+
+        self.jobpost = JobPost()
+        self.jobpost.job_title = self.data['job_post']['job_title']
+        self.jobpost.date_posted = self.data['job_post']['date_posted']
+        self.jobpost.apply_link = self.data['job_post']['apply_link']
+        self.jobpost.job_description = self.data['job_post']['job_description']
+
+        self.jobpost.save()
+
+        self.technology = Technology()
+        self.technology.technology_name = self.data['technology']['technology_name']
+
+        self.technology.save()
+
+
     def test_is_instance(self):
-        thing = mommy.make(JobPostTechnology)
-        self.assertTrue(isinstance(thing, JobPostTechnology))
+        self.assertTrue(isinstance(self.instance, JobPostTechnology))
 
-    def test_fields_jobposttechnology_id(self):
-        pass
+    def test_fields_jobpost(self):
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Technology.objects.get(technology_id=self.technology.pk)
 
-    def test_fields_job_post(self):
-        job_post = None()
-        job_post.<placeholder> = <placeholder>
-        job_post.save()
-        <placeholder>
-        <placeholder> = JobPostTechnology()
-        <placeholder>.job_post = job_post
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = JobPostTechnology.objects.get(job_post=<placeholder>)
-        self.assertEqual(record.job_post, <placeholder>)
+        jobposttechnology = JobPostTechnology()
+        jobposttechnology.job_post = self.jobpost
+        jobposttechnology.technology = self.technology
+        jobposttechnology.save()
+
+        record = JobPostTechnology.objects.get(jobpost=<placeholder>)
+        self.assertEqual(record.jobpost, self.jobpost)
 
     def test_fields_technology(self):
-        technology = None()
-        technology.<placeholder> = <placeholder>
-        technology.save()
-        <placeholder>
-        <placeholder> = JobPostTechnology()
-        <placeholder>.technology = technology
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
+        <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        <placeholder> = Technology.objects.get(technology_id=self.technology.pk)
+
+        jobposttechnology = JobPostTechnology()
+        jobposttechnology.job_post = self.jobpost
+        jobposttechnology.technology = self.technology
+        jobposttechnology.save()
+
         record = JobPostTechnology.objects.get(technology=<placeholder>)
-        self.assertEqual(record.technology, <placeholder>)
+        self.assertEqual(record.technology, self.technology)
 

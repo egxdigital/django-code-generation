@@ -25,6 +25,14 @@ URLs
 
 """
 
+
+
+########################################
+# ADMIN                                #
+########################################
+
+
+
 admin_head = (
     "from django.contrib import admin\n"
     "from {djangoapp}.models import {Models}\n\n"
@@ -35,6 +43,14 @@ admin_class = {
     "class {Model}Admin(admin.ModelAdmin):\n"
     "    pass"
 }
+
+
+
+########################################
+# MODELS                               #
+########################################
+
+
 
 models_model_fields = {
     "models.Model"      :"\n\nclass {field}(models.Model):\n",
@@ -50,16 +66,43 @@ models_model_fields = {
     "URLField"          :"    {field} = models.URLField(null=True)\n",
 }
 
+models_head = (
+    "\"\"\"Models - {djangoapp}\n\n"
+    "This module contains the models for the {djangoapp} application.\n\n"
+    "Notes\n"
+    "-----\n"
+    "    Custom IDs are applied to each model using Python's uuid library\n"
+    "\"\"\"\n"
+    "from django.db import models\n"
+    "import uuid\n"
+)
 
 models_model_str_name = (
     "def __str__(self):\n"
     "    return {desc}\n\n"
 )
 
+models_model = (
+    "\n"
+    "class {Model}(models.Model):\n"
+    "    \"\"\"{docstring}\"\"\"\n"
+    "{modelFields}"
+    "\n"
+    "    def __str__(self):\n"
+    "        return self.{nameField}\n\n"
+)
+
 models_model_str_foreignkeys = (
     "def __str__(self):\n"
     "    return \"self.{modelField} on {foreignkey}\"\n\n"
 )
+
+
+
+########################################
+# URLS                                 #
+########################################
+
 
 
 urls_register_router = (
@@ -75,7 +118,6 @@ urls_router_skeleton = (
     "\n"
     "urlpatterns = router.urls"
 )
-
 
 urls_skeleton = (
     "from django.urls import path\n"
@@ -95,6 +137,13 @@ urls_url_pattern = (
 )
 
 
+
+########################################
+# API                                  #
+########################################
+
+
+
 api_serializers_head = (
     "\"\"\"Serializers - {djangoapp}\n"
     "This module contains the serializers for the {djangoapp} application.\n\n"
@@ -107,7 +156,6 @@ api_serializers_head = (
 api_serializers_nested_object = (
     "    {field} = {Field}Serializer()\n"
 )
-
 
 api_serializers_nested_objects = (
     "class {Model}Serializer(serializers.ModelSerializer):\n"
@@ -152,7 +200,6 @@ api_override_create = (
     "        return {model}_instance\n\n"
 )
 
-
 api_validated_field = (
     "        {field}_data = validated_data.get('{field}', instance.{field})\n"
 )
@@ -185,7 +232,6 @@ api_override_update = (
     "        return instance\n\n"
 )
 
-
 api_views_head = (
     "\"\"\"Views - {djangoapp}\n"
     "This module contains the views for the {djangoapp} application.\n\n"
@@ -205,66 +251,113 @@ api_views_model_viewset = (
 )
 
 
+
+########################################
+# TEST MODELS                          #
+########################################
+
+
+
 test_models_head = (
-    "\"\"\"Test Models - {djangoapp}\n"
-    "This module contains the tests for the {djangoapp} models.\n\n"
+    "\"\"\"Test Models - {djangoapp}\n\n"
+    "This module contains the tests for the {djangoapp} models.\n"
     "\"\"\"\n"
-    "from django.db import models\n"
     "import uuid\n"
-)
-
-
-test_models_test_case = (
-    "\n\nclass {}TestCase(TestCase):\n"
-)
-
-
-test_models_setUp = (
-    "def setUp (self):\n"
-    "    self.thing = mommy.make({Model})\n\n"
-)
-
-test_models_test_primary_key = (
-    "def test_fields_{}(self):\n"
-    "    record = {Model}.objects.get({model}_id=self.thing.pk)\n"
-    "    self.assertEqual(record.pk, self.thing.pk)\n"
-)
-
-test_models_test_is_instance = (
-    "def test_is_instance(self):\n"
-    "    self.assertTrue(isinstance(self.thing, {}))\n\n"
+    "import datetime\n"
+    "from django.db import models\n"
+    "from model_mommy import mommy\n"
+    "from {djangoapp}.models import {Models}\n\n"
 )
 
 test_models_test_field = (
-    "    def test_fields_{field}(self):\n"
-    "        {model} = {Model}()\n"
-    "        <placeholder>\n"
-    "        {model}.{field} = <placeholder>\n"
-    "        {model}.save()\n"
-    "        record = {Model}.objects.get({field}=<placeholder>)\n"
-    "        self.assertEqual(record.{field}, <placeholder>)\n\n"
+    "    def test_fields_{model}_{field}(self):\n"
+    "        record = {Model}.objects.get({uuidfield}=self.{model}.pk)\n"
+    "        self.assertEqual(record.{field}, self.instance.{field})\n\n"
 )
 
-
-test_models_test_foreign_key = (
-    "    def test_fields_{field}(self):\n"
-    "        {ffield} = {fModel}()\n"
-    "        {ffield}.<placeholder> = <placeholder>\n"
-    "        {ffield}.save()\n"
-    "        <placeholder>\n"
-    "        {model} = {Model}()\n"
-    "        {model}.{ffield} = {ffield}\n"
-    "        {model}.<placeholder> = <placeholder>\n"
-    "        {model}.save()\n"
-    "        record = {Model}.objects.get({field}=<placeholder>)\n"
-    "        self.assertEqual(record.{field}, <placeholder>)\n\n"
+test_models_mommy_prepare = (
+    "        {model}_set = mommy.prepare(\n"
+    "            _model={Model},\n"
+    "{nestedAttrs}"
+    "        )\n\n"
 )
+
+test_models_set_attr = (
+    "           {attr} = self.data['{attr}']\n"
+)
+
+test_models_setUp_nested = (
+    "    def setUp (self):\n"
+    "        self.data = {{\n"
+    "{fields}"
+    "        }}"
+    "\n"
+    "{lookups}"
+    "\n"
+)
+
+test_models_setUp = (
+    "    def setUp (self):\n"
+    "        self.data = {{\n"
+    "{fields}"
+    "        }}\n"
+    "\n"
+    "        self.instance = mommy.make(\n"
+    "           {Model},\n"
+    "{attrs}"
+    "        )\n"
+)
+
+test_models_class = (
+    "\nclass {Model}TestCase(TestCase):\n"
+    "{setUp}"
+    "\n"
+    "    def test_is_instance(self):\n"
+    "        self.assertTrue(isinstance(self.instance, {Model}))\n"
+    "\n"
+    "{testFields}"
+)
+
+test_models_nested_lookup = (
+    "        self.{model}.{field} = self.data['{nestedmodel}']['{field}']\n"
+)
+
+test_models_nested_lookup_segment = (
+    "\n"
+    "        self.{model} = {Model}()\n"
+    "{nestedLookups}"
+    "\n"
+    "        self.{model}.save()\n"
+)
+
+test_models_get_foreign_field = (
+    "        <placeholder> = {Model}.objects.get({fuuid}=self.{model}.pk)\n"
+)
+
+test_models_set_foreign_field = (
+    "        {model}.{field} = self.{instance}\n"
+)
+
+test_models_test_foreign_fields = (
+    "    def test_fields_{field}(self):\n"
+    "{getForeigns}"
+    "\n"
+    "        {model} = {Model}()\n"
+    "{setForeigns}"
+    "        {model}.save()\n"
+    "\n"
+    "        record = {Model}.objects.get({field}=<placeholder>)\n"
+    "        self.assertEqual(record.{field}, self.{field})\n\n"
+)
+
 
 
 
 ########################################
 # TEST API                             #
 ########################################
+
+
 
 
 test_api_head = (
@@ -283,14 +376,6 @@ test_api_head = (
     "from {djangoapp}.api.serializers import {Serializers}\n"
     "from {djangoapp}.api.views import {Views}\n\n"
     "client = RequestsClient()\n\n"
-)
-
-test_api_get_single = (
-
-)
-
-test_api_delete = (
-
 )
 
 test_api_flat_model_json_key_value = (
@@ -406,7 +491,6 @@ test_api_view = (
     "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )
 
-
 test_api_list_create = (
     "class Test{Model}ListCreateAPIView(APITestCase):\n"
     "    def setUp(self):\n"
@@ -428,7 +512,6 @@ test_api_list_create = (
     "        self.assertEqual(response.status_code, status.HTTP_201_CREATED)\n"
     "        self.assertEqual({Model}.objects.get().{lookup_field}, self.<placeholder>['{lookup_field}'])\n\n\n"
 )
-
 
 test_api_retrieve_update = (
     "class Test{Model}RetrieveUpdateDestroyAPIView(APITestCase):\n"

@@ -1,90 +1,116 @@
-from django.test import TestCase
+"""Test Models - jobsdatastore
+
+This module contains the tests for the jobsdatastore models.
+"""
+import uuid
 import datetime
+from django.db import models
 from model_mommy import mommy
-from jobsdatastore.models import Company,Technology,CompanyTechnology
+from jobsdatastore.models import Company, Technology, CompanyTechnology
 
 
 class CompanyTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "company_name":"CharField",
+            "hiring_from":"CharField",
+        }
+
+        self.instance = mommy.make(
+           Company,
+           company_id = self.data['company_id']
+           company_name = self.data['company_name']
+           hiring_from = self.data['hiring_from']
+        )
+
     def test_is_instance(self):
-        thing = mommy.make(Company)
-        self.assertTrue(isinstance(thing, Company))
+        self.assertTrue(isinstance(self.instance, Company))
 
-    def test_fields_company_id(self):
-        pass
+    def test_fields_company_company_id(self):
+        record = Company.objects.get(company_id=self.company.pk)
+        self.assertEqual(record.company_id, self.instance.company_id)
 
-    def test_fields_company_name(self):
-        company = Company()
-        <placeholder>
-        company.company_name = <placeholder>
-        company.save()
-        record = Company.objects.get(company_name=<placeholder>)
-        self.assertEqual(record.company_name, <placeholder>)
+    def test_fields_company_company_name(self):
+        record = Company.objects.get(company_id=self.company.pk)
+        self.assertEqual(record.company_name, self.instance.company_name)
 
-    def test_fields_hiring_from(self):
-        company = Company()
-        <placeholder>
-        company.hiring_from = <placeholder>
-        company.save()
-        record = Company.objects.get(hiring_from=<placeholder>)
-        self.assertEqual(record.hiring_from, <placeholder>)
-
+    def test_fields_company_hiring_from(self):
+        record = Company.objects.get(company_id=self.company.pk)
+        self.assertEqual(record.hiring_from, self.instance.hiring_from)
 
 
 class TechnologyTestCase(TestCase):
+    def setUp (self):
+        self.data = {
+            "technology_name":"CharField",
+        }
+
+        self.instance = mommy.make(
+           Technology,
+           technology_id = self.data['technology_id']
+           technology_name = self.data['technology_name']
+        )
+
     def test_is_instance(self):
-        thing = mommy.make(Technology)
-        self.assertTrue(isinstance(thing, Technology))
+        self.assertTrue(isinstance(self.instance, Technology))
 
-    def test_fields_technology_id(self):
-        pass
+    def test_fields_technology_technology_id(self):
+        record = Technology.objects.get(technology_id=self.technology.pk)
+        self.assertEqual(record.technology_id, self.instance.technology_id)
 
-    def test_fields_technology_name(self):
-        technology = Technology()
-        <placeholder>
-        technology.technology_name = <placeholder>
-        technology.save()
-        record = Technology.objects.get(technology_name=<placeholder>)
-        self.assertEqual(record.technology_name, <placeholder>)
-
+    def test_fields_technology_technology_name(self):
+        record = Technology.objects.get(technology_id=self.technology.pk)
+        self.assertEqual(record.technology_name, self.instance.technology_name)
 
 
 class CompanyTechnologyTestCase(TestCase):
-    def test_is_instance(self):
-        thing = mommy.make(CompanyTechnology)
-        self.assertTrue(isinstance(thing, CompanyTechnology))
+    def setUp (self):
+        self.data = {
+            "company":{                
+                "company_name":"CharField",
+                "hiring_from":"CharField",
+               },
+            "technology":{                
+                "technology_name":"CharField",
+               },
+        }
 
-    def test_fields_companytechnology_id(self):
-        pass
+        self.company = Company()
+        self.company.company_name = self.data['company']['company_name']
+        self.company.hiring_from = self.data['company']['hiring_from']
+
+        self.company.save()
+
+        self.technology = Technology()
+        self.technology.technology_name = self.data['technology']['technology_name']
+
+        self.technology.save()
+
+
+    def test_is_instance(self):
+        self.assertTrue(isinstance(self.instance, CompanyTechnology))
 
     def test_fields_company(self):
-        company = None()
-        company.<placeholder> = <placeholder>
-        company.save()
-        <placeholder>
-        <placeholder> = CompanyTechnology()
-        <placeholder>.company = company
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
+        <placeholder> = Company.objects.get(company_id=self.company.pk)
+        <placeholder> = Technology.objects.get(technology_id=self.technology.pk)
+
+        companytechnology = CompanyTechnology()
+        companytechnology.company = self.company
+        companytechnology.technology = self.technology
+        companytechnology.save()
+
         record = CompanyTechnology.objects.get(company=<placeholder>)
-        self.assertEqual(record.company, <placeholder>)
+        self.assertEqual(record.company, self.company)
 
     def test_fields_technology(self):
-        technology = None()
-        technology.<placeholder> = <placeholder>
-        technology.save()
-        <placeholder>
-        <placeholder> = CompanyTechnology()
-        <placeholder>.technology = technology
-        <placeholder>.<placeholder> = <placeholder>
-        <placeholder>.save()
-        record = CompanyTechnology.objects.get(technology=<placeholder>)
-        self.assertEqual(record.technology, <placeholder>)
+        <placeholder> = Company.objects.get(company_id=self.company.pk)
+        <placeholder> = Technology.objects.get(technology_id=self.technology.pk)
 
-    def test_fields_companytechnology_date_created(self):
         companytechnology = CompanyTechnology()
-        <placeholder>
-        companytechnology.companytechnology_date_created = <placeholder>
+        companytechnology.company = self.company
+        companytechnology.technology = self.technology
         companytechnology.save()
-        record = CompanyTechnology.objects.get(companytechnology_date_created=<placeholder>)
-        self.assertEqual(record.companytechnology_date_created, <placeholder>)
+
+        record = CompanyTechnology.objects.get(technology=<placeholder>)
+        self.assertEqual(record.technology, self.technology)
 

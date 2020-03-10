@@ -1,3 +1,11 @@
+"""Models - jobsdatabucket
+
+This module contains the models for the jobsdatabucket application.
+
+Notes
+-----
+    Custom IDs are applied to each model using Python's uuid library
+"""
 from django.db import models
 import uuid
 
@@ -9,12 +17,18 @@ class JobPost(models.Model):
     apply_link = models.URLField(null=True)
     job_description = models.CharField(max_length=250)
 
+    def __str__(self):
+        return self.job_description
+
 
 class JobPostCompany(models.Model):
     """Companies advertise for an open position more than once and post multiple job posts for different positions."""
     jobpostcompany_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     job_post = models.ForeignKey('jobsdatabucket.JobPost',on_delete=models.CASCADE,)
     company = models.ForeignKey('jobsdatastore.Company',on_delete=models.CASCADE,)
+
+    def __str__(self):
+        return self.PLACEHOLDER
 
 
 class JobPostListingTag(models.Model):
@@ -23,6 +37,9 @@ class JobPostListingTag(models.Model):
     job_post = models.ForeignKey('jobsdatabucket.JobPost',on_delete=models.CASCADE,)
     listing_tag = models.ForeignKey('scraper.ListingTag',on_delete=models.CASCADE,)
 
+    def __str__(self):
+        return self.PLACEHOLDER
+
 
 class JobPostScrape(models.Model):
     """A job post can appear in multiple scrapes and scrapes pull many job posts."""
@@ -30,9 +47,16 @@ class JobPostScrape(models.Model):
     job_post = models.ForeignKey('jobsdatabucket.JobPost',on_delete=models.CASCADE,)
     scrape = models.ForeignKey('scraper.Scrape',on_delete=models.CASCADE,)
 
+    def __str__(self):
+        return self.PLACEHOLDER
+
 
 class JobPostTechnology(models.Model):
     """A job post can contain multiple technologies and a given technology can appear on any number of job posts."""
     jobposttechnology_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     job_post = models.ForeignKey('jobsdatabucket.JobPost',on_delete=models.CASCADE,)
     technology = models.ForeignKey('jobsdatastore.Technology',on_delete=models.CASCADE,)
+
+    def __str__(self):
+        return self.PLACEHOLDER
+

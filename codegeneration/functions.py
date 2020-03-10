@@ -36,6 +36,7 @@ from codegeneration.models import *
 from codegeneration.helpers import *
 from codegeneration.fragments import *
 
+
 apps_ViewSets           = {}
 apps_Models             = {}
 django_model_objects    = {}
@@ -145,6 +146,7 @@ def build_fake_data_str_representations(models_dict):
                 else:
                     c = foreignkeynames_models[f]
                     b = build_fake_data_str_for_flat_model(models_dict[c])
+
                     exp_nested_fake += test_api_nested_valid_data.format(
                         nested=f,
                         fields=b
@@ -309,14 +311,11 @@ def create_object_then_save(models_dict, docstring_dict, m, dapp, dfield, fname)
     """
     obj = DjangoModel(m, dapp)
     obj.docstring = docstring_dict.get(m)
-    obj.add_line_to_models_code_fragment(dfield, fname)
-    obj.add_line_to_test_models_code_fragment(dfield, fname)
+    obj.add_model_docstring_to_code_fragment()
     models_dict[m] = obj
 
 
 def generate_test_api_files(models_dict, out_dir):
-
-    build_fake_data_str_representations(models_dict)
 
     head_up_test_api_files(out_dir)
 
@@ -441,10 +440,237 @@ def generate_api_files(out_dir):
         helper_append_contents_to_file(views_contents, views)
 
 
-def generate_models(inp, djangoapp):
-    """Takes a file path and a Django app name and populates
-    global data structures django_model_objects and
-    foreignkeynames_models
+def generate_test_models_files(out_dir, apps_models_dict, models_dict):
+    listOfApps = apps_models_dict.keys()
+
+    modelsWithForeignKeys = {}
+    for _ in models_dict.keys():
+        fieldsDict = models_dict[_].fields
+        for f in fieldsDict.keys():
+            if fieldsDict[f] == 'ForeignKey':
+                if _ not in modelsWithForeignKeys.keys():
+                    modelsWithForeignKeys[_] = [f]
+                else:
+                    modelsWithForeignKeys[_] += [f]
+
+    foreignkeysFields = {}
+    for _ in modelsWithForeignKeys.values():
+        #print (_)
+        for n in _:
+            #print ('\t', n)
+            N = foreignkeynames_models[n]
+            fieldObj = models_dict[N].fields
+            fields = fieldObj.keys()
+            foreignkeysFields[n] = list(_ for _ in fields if fieldObj[_] != "UUIDField")
+
+    for app in listOfApps:
+        filepath = helper_return_filepath('test_models', app, out_dir)
+
+        helper_append_contents_to_file(
+            test_models_head.format(
+                djangoapp=app,
+                Models=apps_ImportModels[app]
+            ),
+            filepath
+        )
+
+        listOfModels = apps_Models[app]
+
+        exp_modelclasses = ""
+
+        for M in listOfModels:
+            #print (M)
+            obj = models_dict.get(M)
+            nesteds = obj.foreignkey_names.keys()
+
+            # We need for each foreignkey, the fields
+            # FOR A GIVEN MODEL, get the foreign key fields
+
+            # for each field, we need that many tests build out
+            # for eaqch test we need a string built out, consisting of the two fields
+
+            exp_models_lookup_segment = ""
+            exp_nested_fields = ""
+
+            exp_setters = ""
+            exp_getters = ""
+
+            list_of_foreign_keys_per_model = []
+
+            try:
+                list_of_foreign_keys_per_model = modelsWithForeignKeys[M]
+            except Exception as e:
+                pass
+            else:
+                list_of_foreign_keys_per_model = modelsWithForeignKeys[M]
+
+                for fld in list_of_foreign_keys_per_model:
+
+                    exp_setters += test_models_set_foreign_field.format(
+                        model=M.lower(),
+                        field=fld,
+                        instance=helper_remove_underscore(fld),
+                    )
+                    exp_getters += test_models_get_foreign_field.format(
+                        Model=helper_return_camel_case_foreign_key_modelname(fld),
+                        model=helper_remove_underscore(fld),
+                        # TODO: Introspect this instead
+                        fuuid='{}_id'.format(helper_remove_underscore(fld))
+                    )
+
+
+                for fld in list_of_foreign_keys_per_model:
+
+                    corresponding_model = foreignkeynames_models[fld]
+                    a = corresponding_model
+
+                    fields_for_corresponding_model = models_dict[a].fields.keys()
+                    b = list(fields_for_corresponding_model)
+
+                    exp_nested_lookups = ""
+
+                    for attr in b:
+                        if models_dict[a].fields[attr] != "UUIDField":
+                            exp_nested_lookups += test_models_nested_lookup.format(
+                                model=a.lower(),
+                                nestedmodel=helper_return_underscore_separated_fieldname(a),
+                                field=attr
+                            )
+
+                    exp_models_lookup_segment += test_models_nested_lookup_segment.format(
+                        model=a.lower(),
+                        Model=a,
+                        nestedLookups=exp_nested_lookups
+                    )
+
+            for fld in list_of_foreign_keys_per_model:
+                exp_nested_fields += test_models_test_foreign_fields.format(
+                    getForeigns=exp_getters,
+                    setForeigns=exp_setters,
+                    model=M.lower(),
+                    Model=M,
+                    field=helper_remove_underscore(fld),
+                )
+
+            ####################################################
+
+            #print ('===========\n', exp_nested_fields)
+            """
+            if M == 'ScrapeJobBoard':
+                print (exp_nested_fields)
+            """
+            ####################################################
+
+            exp_fieldtests = ""
+            exp_attrs = ""
+
+            fields_types = obj.fields
+            listOfFields = fields_types.keys()
+
+            for f in listOfFields:
+
+                field_type = fields_types[f]
+                if field_type == 'UUIDField':
+                    ufield = f
+
+                exp_attrs += test_models_set_attr.format(
+                    attr=f
+                )
+
+                exp_fieldtests += test_models_test_field.format(
+                    model=M.lower(),
+                    Model=M,
+                    uuidfield=ufield,
+                    field=f
+                )
+
+            if len(nesteds) == 0:
+                testFieldsSegment = exp_fieldtests
+                setupStr = test_models_setUp
+                valid = models_fakeDataStr[M]
+                newfakedata = valid
+            else:
+                testFieldsSegment = exp_nested_fields
+                setupStr = test_models_setUp_nested
+                valid = nestedModels_fakeDataStr[M]
+                newfakedata = models_newFakeDataStr[M]
+
+            setup = setupStr.format(
+                fields=valid,
+                Model=M,
+                attrs=exp_attrs,
+                lookups=exp_models_lookup_segment
+            )
+
+
+            exp_modelclasses += test_models_class.format(
+                setUp=setup,
+                Model=M,
+                testFields=testFieldsSegment
+            )
+
+        helper_append_contents_to_file(
+            exp_modelclasses,
+            filepath
+        )
+
+
+def generate_models_files(out_dir, apps_models_dict, models_dict):
+    listOfApps = apps_models_dict.keys()
+
+    for app in listOfApps:
+        filepath = helper_return_filepath('models', app, out_dir)
+
+        helper_append_contents_to_file(
+            models_head.format(djangoapp=app),
+            filepath
+            )
+
+        listOfModels = apps_Models[app]
+        exp_models = ""
+        for M in listOfModels:
+            name = 'PLACEHOLDER'
+            obj = models_dict.get(M)
+            fields_types = obj.fields
+            listOfFields = fields_types.keys()
+            exp_fields = ""
+            for f in listOfFields:
+                field_type = fields_types[f]
+                if field_type == 'CharField':
+                    name = f
+
+                if field_type == 'ForeignKey':
+                    fnapp = obj.foreignkey_parent.get(f)
+                    fmodel = foreignkeynames_models[f]
+                else:
+                    fnapp = ''
+                    fmodel = ''
+
+                temp = models_model_fields.get(field_type)
+
+                exp_fields += temp.format(
+                    field=f,
+                    foreignapp=fnapp,
+                    foreignmodel=fmodel,
+                )
+
+            exp_models += models_model.format(
+                docstring=models_docstrings[M],
+                Model=M,
+                modelFields=exp_fields,
+                nameField=name
+            )
+
+
+        helper_append_contents_to_file(
+            exp_models,
+            filepath
+            )
+
+
+def generate_models(out_dir, app_name_list, filepath_dict, djangoapps_inputfiles):
+    """Loops over the csv rows and compiles global and
+    temporary collections.
 
     Parameters
     ----------
@@ -459,44 +685,50 @@ def generate_models(inp, djangoapp):
         Number of models detected in each CSV file.
     """
 
-    with open(inp) as fd:
-        rdr = csv.reader(fd, delimiter=',')
-        next(rdr)
+    for tup in djangoapps_inputfiles:
+        appname = tup[0]
+        input_csv = tup[1]
+        filepath_dict[appname] = helper_return_models_files(appname, out_dir)
+        app_name_list.append(appname)
 
-        for row in rdr:
-            djangofield = row[0]
-            fieldname = row[1]
-            docstring = row[2]
+        with open(input_csv) as fd:
+            rdr = csv.reader(fd, delimiter=',')
+            next(rdr)
 
-            if djangofield == 'models.Model':
-                model_name = fieldname
+            for row in rdr:
+                djangofield = row[0]
+                fieldname = row[1]
+                docstring = row[2]
 
-                build_docstring_collection(models_docstrings, model_name, docstring)
+                if djangofield == 'models.Model':
+                    model_name = fieldname
 
-                save_to_foreignkey_Model_collection(foreignkeynames_models, model_name)
+                    build_docstring_collection(models_docstrings, model_name, docstring)
 
-                create_object_then_save(
-                    django_model_objects,
-                    models_docstrings,
-                    model_name,
-                    djangoapp,
-                    djangofield,
-                    fieldname
-                )
+                    save_to_foreignkey_Model_collection(foreignkeynames_models, model_name)
+
+                    create_object_then_save(
+                        django_model_objects,
+                        models_docstrings,
+                        model_name,
+                        appname,
+                        djangofield,
+                        fieldname
+                    )
 
 
-            list_of_models = foreignkeynames_models.values()
+                list_of_models = foreignkeynames_models.values()
 
-            if fieldname in list_of_models:
-                curr = django_model_objects.get(fieldname)
+                if fieldname in list_of_models:
+                    curr = django_model_objects.get(fieldname)
 
-            if djangofield == 'ForeignKey':
-                fkey_model_name = foreignkeynames_models.get(fieldname)
-                foreignkeymodel = django_model_objects.get(fkey_model_name)
-                curr.add_foreign_keys(foreignkeymodel)
+                if djangofield == 'ForeignKey':
+                    fkey_model_name = foreignkeynames_models.get(fieldname)
+                    foreignkeymodel = django_model_objects.get(fkey_model_name)
+                    curr.add_foreign_keys(foreignkeymodel)
 
-            if fieldname not in list_of_models:
-                curr.add_field(djangofield, fieldname)
+                if fieldname not in list_of_models:
+                    curr.add_field(djangofield, fieldname)
 
     models_detected = len(django_model_objects.keys())
     return models_detected
@@ -519,49 +751,22 @@ def generate_code(output_dir, *djangoapps_inputfiles):
     Integer
         Number of files generated by generate_code
     """
-
-    filepaths = {}
     appnames = []
+    app_modeltestModel = {}
 
-    for tup in djangoapps_inputfiles:
-        appname = tup[0]
-        input_csv = tup[1]
-        filepaths[appname] = helper_return_models_files(appname, output_dir)
-        appnames.append(appname)
-        generate_models(input_csv, appname)
-
-    for appname in appnames:
-        dest_models = filepaths[appname][0]
-        dest_test_models = filepaths[appname][1]
-        helper_prepare_models_py(dest_models)
-
-    for model in django_model_objects.keys():
-        m = django_model_objects.get(model)
-
-        for appname in appnames:
-            if m.djangoapp == appname:
-                models_file = filepaths[appname][0]
-                test_models_file = filepaths[appname][1]
-
-                helper_append_contents_to_file(m.models_code_fragment, models_file)
-
-                helper_append_contents_to_file(m.test_models_code_fragment, test_models_file)
-
-    # TODO: Refactor
-    for appname in appnames:
-        models = {}
-
-        for model in django_model_objects.values():
-            if model.djangoapp == appname:
-                models[helper_return_underscore_separated_fieldname(model.modelname)] = model.modelname
-
-        helper_prepare_test_models_py(appname, models, filepaths[appname][1])
+    generate_models(output_dir, appnames, app_modeltestModel, djangoapps_inputfiles)
 
     build_dict_apps_Models(django_model_objects)
 
+    set_up_import_statements(apps_Models)
+
     build_dict_apps_ViewSets(apps_Models)
 
-    set_up_import_statements(apps_Models)
+    build_fake_data_str_representations(django_model_objects)
+
+    generate_models_files(output_dir, apps_Models, django_model_objects)
+
+    generate_test_models_files(output_dir, apps_Models, django_model_objects)
 
     generate_urls_files(django_model_objects, output_dir)
 
