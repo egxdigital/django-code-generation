@@ -233,7 +233,7 @@ api_override_update = (
 )
 
 api_views_head = (
-    "\"\"\"Views - {djangoapp}\n"
+    "\"\"\"Views - {djangoapp}\n\n"
     "This module contains the views for the {djangoapp} application.\n\n"
     "\"\"\"\n"
     "from rest_framework import generics, viewsets, permissions\n"

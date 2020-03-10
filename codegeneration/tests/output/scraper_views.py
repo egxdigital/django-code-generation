@@ -2,8 +2,7 @@
 This module contains the views for the scraper application.
 
 """
-from rest_framework import generics
-from rest_framework import viewsets
+from rest_framework import generics, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import authentication_classes, permission_classes
 from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
