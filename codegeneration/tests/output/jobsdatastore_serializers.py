@@ -1,6 +1,6 @@
 """Serializers - jobsdatastore
-This module contains the serializers for the jobsdatastore application.
 
+This module contains the serializers for the jobsdatastore application.
 """
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist

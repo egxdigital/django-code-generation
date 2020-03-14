@@ -34,15 +34,18 @@ URLs
 
 
 admin_head = (
+    "\"\"\"Admin - {djangoapp}\n\n"
+    "This module contains the configuration for the Django admin site\n"
+    "\"\"\"\n"
     "from django.contrib import admin\n"
     "from {djangoapp}.models import {Models}\n\n"
 )
 
-admin_class = {
+admin_class = (
     "@admin.register({Model})\n"
     "class {Model}Admin(admin.ModelAdmin):\n"
-    "    pass"
-}
+    "    pass\n\n"
+)
 
 
 
@@ -145,11 +148,13 @@ urls_url_pattern = (
 
 
 api_serializers_head = (
-    "\"\"\"Serializers - {djangoapp}\n"
-    "This module contains the serializers for the {djangoapp} application.\n\n"
+    "\"\"\"Serializers - {djangoapp}\n\n"
+    "This module contains the serializers for the {djangoapp} application.\n"
     "\"\"\"\n"
     "from rest_framework import serializers\n"
     "from django.core.exceptions import ObjectDoesNotExist\n"
+    "{externModelsSegment}"
+    "{externSerializersSegment}"
     "from {djangoapp}.models import {Models}\n\n"
 )
 
@@ -244,7 +249,6 @@ api_views_head = (
 )
 
 api_views_model_viewset = (
-    "@permission_classes((AllowAny, ))\n"
     "class {Model}ViewSet(viewsets.ModelViewSet):\n"
     "    queryset = {Model}.objects.all()\n"
     "    serializer_class = {Model}Serializer\n\n\n"
@@ -260,18 +264,22 @@ api_views_model_viewset = (
 
 test_models_head = (
     "\"\"\"Test Models - {djangoapp}\n\n"
-    "This module contains the tests for the {djangoapp} models.\n"
+    "This module contains the tests for the {djangoapp} models.\n\n"
+    "Example\n"
+    "    python manage.py test --pattern=\"test_*\" {djangoapp}.tests.test_models\n"
     "\"\"\"\n"
     "import uuid\n"
+    "import pytz\n"
     "import datetime\n"
     "from django.db import models\n"
+    "from django.test import TestCase\n"
     "from model_mommy import mommy\n"
     "from {djangoapp}.models import {Models}\n\n"
 )
 
 test_models_test_field = (
     "    def test_fields_{model}_{field}(self):\n"
-    "        record = {Model}.objects.get({uuidfield}=self.{model}.pk)\n"
+    "        record = {Model}.objects.get({uuidfield}=self.instance.pk)\n"
     "        self.assertEqual(record.{field}, self.instance.{field})\n\n"
 )
 
@@ -283,7 +291,7 @@ test_models_mommy_prepare = (
 )
 
 test_models_set_attr = (
-    "           {attr} = self.data['{attr}']\n"
+    "           {attr} = self.data['{attr}'],\n"
 )
 
 test_models_setUp_nested = (
@@ -313,7 +321,8 @@ test_models_class = (
     "{setUp}"
     "\n"
     "    def test_is_instance(self):\n"
-    "        self.assertTrue(isinstance(self.instance, {Model}))\n"
+    "        thing = {Model}()\n"
+    "        self.assertTrue(isinstance(thing, {Model}))\n"
     "\n"
     "{testFields}"
 )
@@ -347,7 +356,7 @@ test_models_test_foreign_fields = (
     "        {model}.save()\n"
     "\n"
     "        record = {Model}.objects.get({field}=<placeholder>)\n"
-    "        self.assertEqual(record.{field}, self.{field})\n\n"
+    "        self.assertEqual(record.{field}, self.{instance})\n\n"
 )
 
 
@@ -361,21 +370,33 @@ test_models_test_foreign_fields = (
 
 
 test_api_head = (
-    "\"\"\"Test API\n"
+    "\"\"\"Test API - {djangoapp}\n\n"
     "This module cointains the test cases for the API views of the {djangoapp}\n"
     "Django application.\n\n"
     "Examples\n"
-    "    python manage.py test --pattern=\"test_*\" {djangoapp}.tests\n\n"
+    "    python manage.py test --pattern=\"test_*\" {djangoapp}.tests\n"
     "\"\"\"\n"
     "import pprint, time, pytz, json, datetime\n"
     "from django.urls import reverse\n"
-    "from rest_framework import status\n"
+    "from django.contrib.auth.models import User\n"
     "from rest_framework.authtoken.models import Token\n"
+    "from rest_framework import status\n"
     "from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient\n"
+    "from rest_framework.test import force_authenticate\n"
+    "{externModelsSegment}"
+    "{externSerializersSegment}"
     "from {djangoapp}.models import {Models}\n"
     "from {djangoapp}.api.serializers import {Serializers}\n"
     "from {djangoapp}.api.views import {Views}\n\n"
     "client = RequestsClient()\n\n"
+)
+
+test_api_head_extern_models = (
+    "from {externapp}.models import {Models}\n"
+)
+
+test_api_head_extern_serializers = (
+    "from {externapp}.api.serializers import {Serializers}\n"
 )
 
 test_api_flat_model_json_key_value = (
@@ -411,11 +432,11 @@ test_api_assert_forignkey_object_counts = (
 )
 
 test_api_foreignkey_object_get = (
-    "        {foreignkey} = str({Model}.objects.get().{foreignkey})\n"
+    "        {foreignkeymodel} = str({Model}.objects.get().{foreignkey})\n"
 )
 
 test_api_assert_nested_object = (
-    "        self.assertEqual({foreignkey}, '<model __str__ value>')\n"
+    "        self.assertEqual({foreignkeymodel}, '<model __str__ value>')\n"
 )
 
 test_api_nestedObject_get_pk = (
@@ -428,6 +449,34 @@ test_api_nested_object_count = (
 
 test_api_nested_endpoint = (
     "        self.{nested}_endpoint = ('http://127.0.0.1:8000/api/{plural_nested}/')\n"
+)
+
+test_api_is_nested_valid = (
+    "        valid_value = {foreignmodel}_pk\n"
+    "        instance = {Model}.objects.get({foreignfield}=valid_value)\n\n"
+    "        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={{'{foreignfield}':valid_value}}, HTTP_AUTHORIZATION=self.token)\n"
+)
+
+test_api_is_not_nested_valid = (
+    "        valid_value = self.valid_{model}['<attr>']\n"
+    "        instance = {Model}.objects.get(<attr>=valid_value)\n\n"
+    "        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={{'<field>':valid_value}}, HTTP_AUTHORIZATION=self.token)\n"
+)
+
+test_api_is_nested_get = (
+    "        valid_value = {foreignmodel}_pk\n"
+    "        instance = {Model}.objects.get({foreignfield}=valid_value)\n\n"
+    "        request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)\n"
+    "        force_authenticate(request, user=self.user)\n"
+    "        response = self.view(request, {foreignfield}=instance.pk)\n"
+)
+
+test_api_is_not_nested_get = (
+    "        valid_value = self.valid_{model}['<attr>']\n"
+    "        instance = {Model}.objects.get(<field>=valid_value)\n\n"
+    "        request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)\n"
+    "        force_authenticate(request, user=self.user)\n"
+    "        response = self.view(request, <field>=instance.<field>)\n"
 )
 
 test_api_view = (
@@ -457,16 +506,14 @@ test_api_view = (
     "        post_response = self.client.post(self.url, self.valid_{model}, format='json', HTTP_AUTHORIZATION=self.token)\n"
     "{nestedObject_pks}"
     "\n"
-    "        instance = {Model}.objects.get(<field>='<value>')\n\n"
-    "        request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)\n"
-    "        force_authenticate(request, user=self.user)\n"
-    "        response = self.view(request, <field>=instance.<field>)\n"
+    "{isnestedGetSegment}"
     "        response.render()\n\n"
     "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
     "        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))\n\n"
     "    def test_update_{model}(self):\n"
     "        post = self.client.post(self.url, self.valid_{model}, format='json', HTTP_AUTHORIZATION=self.token)\n"
-    "        self.assertEqual({Model}.objects.get().<field>.<attr>, \"<before_value>\")\n\n"
+    "        before_valid_value = self.valid_{model}['<attr>']\n"
+    "        self.assertEqual({Model}.objects.get().<attr>, before_valid_value)\n\n"
     "        {model}_pk = str({Model}.objects.get().{model}_id)\n"
     "{nestedObject_pks}"
     "\n"
@@ -480,13 +527,14 @@ test_api_view = (
     "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
     "{assert_nested_object_counts}"
     "        self.assertEqual({Model}.objects.count(), 1)\n"
-    "        self.assertEqual({Model}.objects.get().<field>.<attr>, \"<after value>\")\n\n"
+    "        self.assertEqual({Model}.objects.get().<attr>, data['<attr_after>'])\n\n"
     "    def test_delete_{model}(self):\n"
     "        post = self.client.post(self.url, self.valid_{model}, format='json', HTTP_AUTHORIZATION=self.token)\n"
+    "        self.assertEqual({Model}.objects.count(), 1)\n"
     "{nestedObject_pks}"
     "\n"
-    "        instance = {Model}.objects.get(<nestedObject>=<value>)\n\n"
-    "        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={{'<field>':'<value>'}}, HTTP_AUTHORIZATION=self.token)\n\n"
+    "{isNestedValidSegment}"
+    "\n"
     "        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)\n"
     "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )

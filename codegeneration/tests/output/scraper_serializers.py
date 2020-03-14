@@ -1,6 +1,6 @@
 """Serializers - scraper
-This module contains the serializers for the scraper application.
 
+This module contains the serializers for the scraper application.
 """
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -62,9 +62,9 @@ class ScrapeJobBoardSerializer(serializers.ModelSerializer):
             'scrape_id',
             scrape.scrape_id
         )
-        scrape.scrape_date = scrape_data.get(
-            'scrape_date',
-            scrape.scrape_date
+        scrape.scrape_datetime = scrape_data.get(
+            'scrape_datetime',
+            scrape.scrape_datetime
         )
         scrape.entries_scraped = scrape_data.get(
             'entries_scraped',

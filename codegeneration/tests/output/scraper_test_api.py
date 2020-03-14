@@ -1,16 +1,18 @@
-"""Test API
+"""Test API - scraper
+
 This module cointains the test cases for the API views of the scraper
 Django application.
 
 Examples
     python manage.py test --pattern="test_*" scraper.tests
-
 """
 import pprint, time, pytz, json, datetime
 from django.urls import reverse
-from rest_framework import status
+from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient
+from rest_framework.test import force_authenticate
 from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
 from scraper.api.serializers import JobBoardSerializer, ListingTagSerializer, ScrapeSerializer, ScrapeJobBoardSerializer, JobBoardListingTagSerializer
 from scraper.api.views import JobBoardViewSet, ListingTagViewSet, ScrapeViewSet, ScrapeJobBoardViewSet, JobBoardListingTagViewSet
@@ -43,7 +45,8 @@ class TestJobBoardAPIView(APITestCase):
     def test_get_single_jobboard(self):
         post_response = self.client.post(self.url, self.valid_jobboard, format='json', HTTP_AUTHORIZATION=self.token)
 
-        instance = JobBoard.objects.get(<field>='<value>')
+        valid_value = self.valid_jobboard['<attr>']
+        instance = JobBoard.objects.get(<field>=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
@@ -55,7 +58,8 @@ class TestJobBoardAPIView(APITestCase):
 
     def test_update_jobboard(self):
         post = self.client.post(self.url, self.valid_jobboard, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobBoard.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobboard['<attr>']
+        self.assertEqual(JobBoard.objects.get().<attr>, before_valid_value)
 
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
 
@@ -72,14 +76,16 @@ class TestJobBoardAPIView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(JobBoard.objects.count(), 1)
-        self.assertEqual(JobBoard.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobBoard.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobboard(self):
         post = self.client.post(self.url, self.valid_jobboard, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobBoard.objects.count(), 1)
 
-        instance = JobBoard.objects.get(<nestedObject>=<value>)
+        valid_value = self.valid_jobboard['<attr>']
+        instance = JobBoard.objects.get(<attr>=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobBoard.objects.count(), 0)
@@ -109,7 +115,8 @@ class TestListingTagAPIView(APITestCase):
     def test_get_single_listingtag(self):
         post_response = self.client.post(self.url, self.valid_listingtag, format='json', HTTP_AUTHORIZATION=self.token)
 
-        instance = ListingTag.objects.get(<field>='<value>')
+        valid_value = self.valid_listingtag['<attr>']
+        instance = ListingTag.objects.get(<field>=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
@@ -121,7 +128,8 @@ class TestListingTagAPIView(APITestCase):
 
     def test_update_listingtag(self):
         post = self.client.post(self.url, self.valid_listingtag, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(ListingTag.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_listingtag['<attr>']
+        self.assertEqual(ListingTag.objects.get().<attr>, before_valid_value)
 
         listingtag_pk = str(ListingTag.objects.get().listingtag_id)
 
@@ -136,14 +144,16 @@ class TestListingTagAPIView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ListingTag.objects.count(), 1)
-        self.assertEqual(ListingTag.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(ListingTag.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_listingtag(self):
         post = self.client.post(self.url, self.valid_listingtag, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(ListingTag.objects.count(), 1)
 
-        instance = ListingTag.objects.get(<nestedObject>=<value>)
+        valid_value = self.valid_listingtag['<attr>']
+        instance = ListingTag.objects.get(<attr>=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ListingTag.objects.count(), 0)
@@ -161,7 +171,7 @@ class TestScrapeAPIView(APITestCase):
 
 
         self.valid_scrape = {
-            "scrape_date":"DateField",
+            "scrape_datetime":"DateTimeField",
             "entries_scraped":"IntegerField",
             "scrape_duration":"DurationField",
             "scrape_success":"BooleanField",
@@ -176,7 +186,8 @@ class TestScrapeAPIView(APITestCase):
     def test_get_single_scrape(self):
         post_response = self.client.post(self.url, self.valid_scrape, format='json', HTTP_AUTHORIZATION=self.token)
 
-        instance = Scrape.objects.get(<field>='<value>')
+        valid_value = self.valid_scrape['<attr>']
+        instance = Scrape.objects.get(<field>=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
@@ -188,12 +199,13 @@ class TestScrapeAPIView(APITestCase):
 
     def test_update_scrape(self):
         post = self.client.post(self.url, self.valid_scrape, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(Scrape.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_scrape['<attr>']
+        self.assertEqual(Scrape.objects.get().<attr>, before_valid_value)
 
         scrape_pk = str(Scrape.objects.get().scrape_id)
 
         data = {
-            "scrape_date":"DateField",
+            "scrape_datetime":"DateTimeField",
             "entries_scraped":"IntegerField",
             "scrape_duration":"DurationField",
             "scrape_success":"BooleanField",
@@ -206,14 +218,16 @@ class TestScrapeAPIView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Scrape.objects.count(), 1)
-        self.assertEqual(Scrape.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(Scrape.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_scrape(self):
         post = self.client.post(self.url, self.valid_scrape, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(Scrape.objects.count(), 1)
 
-        instance = Scrape.objects.get(<nestedObject>=<value>)
+        valid_value = self.valid_scrape['<attr>']
+        instance = Scrape.objects.get(<attr>=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Scrape.objects.count(), 0)
@@ -234,7 +248,7 @@ class TestScrapeJobBoardAPIView(APITestCase):
 
         self.valid_scrapejobboard = {
             "scrape":{                
-                "scrape_date":"DateField",
+                "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
@@ -249,23 +263,24 @@ class TestScrapeJobBoardAPIView(APITestCase):
     def test_create_scrapejobboard(self):
         response = self.client.post(self.url, self.valid_scrapejobboard, format='json', HTTP_AUTHORIZATION=self.token)
         scrape = str(ScrapeJobBoard.objects.get().scrape)
-        job_board = str(ScrapeJobBoard.objects.get().job_board)
+        jobboard = str(ScrapeJobBoard.objects.get().job_board)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ScrapeJobBoard.objects.count(), 1)
         self.assertEqual(scrape, '<model __str__ value>')
-        self.assertEqual(job_board, '<model __str__ value>')
+        self.assertEqual(jobboard, '<model __str__ value>')
 
     def test_get_single_scrapejobboard(self):
         post_response = self.client.post(self.url, self.valid_scrapejobboard, format='json', HTTP_AUTHORIZATION=self.token)
         scrape_pk = str(Scrape.objects.get().scrape_id)
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
 
-        instance = ScrapeJobBoard.objects.get(<field>='<value>')
+        valid_value = scrape_pk
+        instance = ScrapeJobBoard.objects.get(scrape=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, scrape=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -273,7 +288,8 @@ class TestScrapeJobBoardAPIView(APITestCase):
 
     def test_update_scrapejobboard(self):
         post = self.client.post(self.url, self.valid_scrapejobboard, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(ScrapeJobBoard.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_scrapejobboard['<attr>']
+        self.assertEqual(ScrapeJobBoard.objects.get().<attr>, before_valid_value)
 
         scrapejobboard_pk = str(ScrapeJobBoard.objects.get().scrapejobboard_id)
         scrape_pk = str(Scrape.objects.get().scrape_id)
@@ -282,7 +298,7 @@ class TestScrapeJobBoardAPIView(APITestCase):
         data = {
             "scrapejobboard_id":scrapejobboard_pk,
             "scrape":{                
-                "scrape_date":"DateField",
+                "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
@@ -303,16 +319,18 @@ class TestScrapeJobBoardAPIView(APITestCase):
         self.assertEqual(Scrape.objects.count(), 1)
         self.assertEqual(JobBoard.objects.count(), 1)
         self.assertEqual(ScrapeJobBoard.objects.count(), 1)
-        self.assertEqual(ScrapeJobBoard.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(ScrapeJobBoard.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_scrapejobboard(self):
         post = self.client.post(self.url, self.valid_scrapejobboard, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(ScrapeJobBoard.objects.count(), 1)
         scrape_pk = str(Scrape.objects.get().scrape_id)
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
 
-        instance = ScrapeJobBoard.objects.get(<nestedObject>=<value>)
+        valid_value = scrape_pk
+        instance = ScrapeJobBoard.objects.get(scrape=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'scrape':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ScrapeJobBoard.objects.count(), 0)
@@ -344,24 +362,25 @@ class TestJobBoardListingTagAPIView(APITestCase):
 
     def test_create_jobboardlistingtag(self):
         response = self.client.post(self.url, self.valid_jobboardlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
-        job_board = str(JobBoardListingTag.objects.get().job_board)
-        listing_tag = str(JobBoardListingTag.objects.get().listing_tag)
+        jobboard = str(JobBoardListingTag.objects.get().job_board)
+        listingtag = str(JobBoardListingTag.objects.get().listing_tag)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(JobBoardListingTag.objects.count(), 1)
-        self.assertEqual(job_board, '<model __str__ value>')
-        self.assertEqual(listing_tag, '<model __str__ value>')
+        self.assertEqual(jobboard, '<model __str__ value>')
+        self.assertEqual(listingtag, '<model __str__ value>')
 
     def test_get_single_jobboardlistingtag(self):
         post_response = self.client.post(self.url, self.valid_jobboardlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
         listingtag_pk = str(ListingTag.objects.get().listingtag_id)
 
-        instance = JobBoardListingTag.objects.get(<field>='<value>')
+        valid_value = jobboard_pk
+        instance = JobBoardListingTag.objects.get(job_board=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, job_board=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -369,7 +388,8 @@ class TestJobBoardListingTagAPIView(APITestCase):
 
     def test_update_jobboardlistingtag(self):
         post = self.client.post(self.url, self.valid_jobboardlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobBoardListingTag.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobboardlistingtag['<attr>']
+        self.assertEqual(JobBoardListingTag.objects.get().<attr>, before_valid_value)
 
         jobboardlistingtag_pk = str(JobBoardListingTag.objects.get().jobboardlistingtag_id)
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
@@ -396,16 +416,18 @@ class TestJobBoardListingTagAPIView(APITestCase):
         self.assertEqual(JobBoard.objects.count(), 1)
         self.assertEqual(ListingTag.objects.count(), 1)
         self.assertEqual(JobBoardListingTag.objects.count(), 1)
-        self.assertEqual(JobBoardListingTag.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobBoardListingTag.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobboardlistingtag(self):
         post = self.client.post(self.url, self.valid_jobboardlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobBoardListingTag.objects.count(), 1)
         jobboard_pk = str(JobBoard.objects.get().jobboard_id)
         listingtag_pk = str(ListingTag.objects.get().listingtag_id)
 
-        instance = JobBoardListingTag.objects.get(<nestedObject>=<value>)
+        valid_value = jobboard_pk
+        instance = JobBoardListingTag.objects.get(job_board=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'job_board':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobBoardListingTag.objects.count(), 0)

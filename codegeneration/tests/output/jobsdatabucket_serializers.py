@@ -1,9 +1,13 @@
 """Serializers - jobsdatabucket
-This module contains the serializers for the jobsdatabucket application.
 
+This module contains the serializers for the jobsdatabucket application.
 """
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from scraper.models import ListingTag, Scrape
+from jobsdatastore.models import Company, Technology
+from scraper.api.serializers import ListingTagSerializer, ScrapeSerializer
+from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
 class JobPostSerializer(serializers.ModelSerializer):
@@ -218,9 +222,9 @@ class JobPostScrapeSerializer(serializers.ModelSerializer):
             'scrape_id',
             scrape.scrape_id
         )
-        scrape.scrape_date = scrape_data.get(
-            'scrape_date',
-            scrape.scrape_date
+        scrape.scrape_datetime = scrape_data.get(
+            'scrape_datetime',
+            scrape.scrape_datetime
         )
         scrape.entries_scraped = scrape_data.get(
             'entries_scraped',

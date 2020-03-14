@@ -32,16 +32,19 @@ Author
 import os
 import csv
 import pprint
+from operator import or_
+from functools import reduce
 from codegeneration.models import *
 from codegeneration.helpers import *
 from codegeneration.fragments import *
 
-
-apps_ViewSets           = {}
-apps_Models             = {}
-django_model_objects    = {}
-models_docstrings       = {}
-foreignkeynames_models  = {}
+apps_Externmodels        = {}
+foreignmodels_ParentApps = {}
+apps_ViewSets            = {}
+apps_Models              = {}
+django_model_objects     = {}
+models_docstrings        = {}
+foreignkeynames_models   = {}
 
 models_fakeDataStr                      = {}
 models_nestedObjectPKs                  = {}
@@ -64,7 +67,6 @@ def build_dict_apps_ViewSets(apps_models_dict):
         listOfModels = apps_Models[app]
         viewSets = []
         for model in listOfModels:
-            #print ('\t', model)
             viewSets += ["{}ViewSet".format(model)]
 
         apps_ViewSets[app] = ", ".join(viewSets)
@@ -82,8 +84,41 @@ def build_dict_apps_Models(models_dict):
             apps_Models[app] += [model]
 
 
+def build_dict_foreignmodels_Parentapps(models_dict):
+    for M in models_dict.keys():
+        if models_dict[M].isForeignkey:
+            foreignmodels_ParentApps[M] = models_dict[M].djangoapp
+        else:
+            pass
+
+
+def build_dict_apps_Externmodels(models_dict, apps_models_dict):
+    apps_Nestedmodels = {}
+
+    list_of_apps = apps_models_dict.keys()
+
+    for app in list_of_apps:
+        list_of_models = apps_Models[app]
+        list_of_model_nested_models = [set(list(models_dict[_].foreignkey_names.keys())) for _ in list_of_models]
+        set_of_nested_models = reduce(or_, list_of_model_nested_models)
+        apps_Nestedmodels[app] = set_of_nested_models
+
+        target_models = {}
+        list_of_foreign_models = list(apps_Nestedmodels[app])
+        for model in list_of_foreign_models:
+            target_app = models_dict[model].djangoapp
+            if target_app != app:
+                if target_app not in target_models:
+                    target_models[target_app] = [model]
+                else:
+                    target_models[target_app] += [model]
+
+        apps_Externmodels[app] = target_models
+
+
 def set_up_import_statements(app_models_dict):
     listOfApps = apps_Models.keys()
+
     for app in listOfApps:
         models_list = app_models_dict.get(app)
         m = ', '.join(models_list)
@@ -161,8 +196,7 @@ def build_fake_data_str_representations(models_dict):
                         foreignkeymodel=c.lower()
                     )
                     exp_assert_nested += test_api_assert_nested_object.format(
-                        foreignkey=f,
-                        ForeignkeyModel=c,
+                        foreignkeymodel=c.lower()
                     )
                     exp_nested_objectpk += test_api_nestedObject_get_pk.format(
                         foreignkey=helper_remove_underscore(f),
@@ -193,55 +227,49 @@ def build_fake_data_str_representations(models_dict):
         models_nestedEndpoints[_]                 = exp_nestedEndpoint
 
 
+def build_extern_models_serializers(app, modelsStr, serializersStr):
+    for eapp in list(apps_Externmodels[app].keys()):
+        models = apps_Externmodels[app][eapp]
+
+        modelsStr += test_api_head_extern_models.format(
+            externapp=eapp,
+            Models=', '.join(models)
+        )
+
+        serializersStr += test_api_head_extern_serializers.format(
+            externapp=eapp,
+            Serializers=', '.join(["{}Serializer".format(_) for _ in models])
+        )
+
+    return modelsStr, serializersStr
+
+
 def head_up_test_api_files(output_directory):
     listOfApps = apps_Models.keys()
+    models_dict = django_model_objects
 
     for app in listOfApps:
         filepath = helper_return_filepath('test_api', app, output_directory)
+
+        exp_extern_models = ""
+        exp_extern_serializers = ""
+
+        if len(  apps_Externmodels[app].values()  ) != 0:
+            exp_extern_models, exp_extern_serializers = build_extern_models_serializers(app, exp_extern_models, exp_extern_serializers)
 
         helper_append_contents_to_file(
                     test_api_head.format(
                         djangoapp = app,
                         Models = apps_ImportModels[app],
                         Serializers = apps_ImportSerializers[app],
+                        externModelsSegment=exp_extern_models,
+                        externSerializersSegment=exp_extern_serializers,
                         Views = apps_ImportViewSets[app],
                     ),
                     filepath)
 
 
-def write_testcases_to_test_api_files(output_directory):
-    modelNames = django_model_objects.keys()
-
-    for M in modelNames:
-        obj = django_model_objects[M]
-        nesteds = obj.foreignkey_names.keys()
-
-        if len(nesteds) == 0:
-            valid = models_fakeDataStr[M]
-            newfakedata = valid
-        else:
-            valid = nestedModels_fakeDataStr[M]
-            newfakedata = models_newFakeDataStr[M]
-
-        app = django_model_objects[M].djangoapp
-        filepath = helper_return_filepath('test_api', app, output_directory)
-
-        helper_append_contents_to_file((test_api_view.format(
-                        model=M.lower(),
-                        Model=M,
-                        nestedEndpoints=models_nestedEndpoints[M],
-                        validFields=valid,
-                        get_foreignkey_objects=models_getForeignkeyObjectExpressions[M],
-                        assertNestedObjects=models_assertNestedObjectExpressions[M],
-                        nestedObject_pks=models_nestedObjectPKs[M],
-                        new_fields=newfakedata,
-                        plural_model=helper_pluralize(M.lower()),
-                        assert_nested_object_counts=models_assertNestedObjectCounts[M],
-                    )),
-                    filepath)
-
-
-def build_docstring_collection(docstring_dict, m, docstring):
+def add_to_docstring_collection(docstring_dict, m, docstring):
     """Builds docstring dictionary.
 
     Parameters
@@ -319,7 +347,56 @@ def generate_test_api_files(models_dict, out_dir):
 
     head_up_test_api_files(out_dir)
 
-    write_testcases_to_test_api_files(out_dir)
+    modelNames = django_model_objects.keys()
+    models_foreignkeynames = helper_reverse(foreignkeynames_models)
+
+    for M in modelNames:
+        obj = django_model_objects[M]
+        nesteds = obj.foreignkey_names.keys()
+
+        if len(nesteds) == 0:
+            deleteValidStr = test_api_is_not_nested_valid.format(
+                model=M.lower(),
+                Model=M
+            )
+            getStr = test_api_is_not_nested_get.format(
+                model=M.lower(),
+                Model=M,
+            )
+            valid = models_fakeDataStr[M]
+            newfakedata = valid
+        else:
+            deleteValidStr = test_api_is_nested_valid.format(
+                foreignmodel=list(nesteds)[0].lower(),
+                foreignfield=models_foreignkeynames.get(list(nesteds)[0]),
+                Model=M
+            )
+            getStr = test_api_is_nested_get.format(
+                foreignmodel=list(nesteds)[0].lower(),
+                Model=M,
+                foreignfield=models_foreignkeynames.get(list(nesteds)[0]),
+            )
+            valid = nestedModels_fakeDataStr[M]
+            newfakedata = models_newFakeDataStr[M]
+
+        app = django_model_objects[M].djangoapp
+        filepath = helper_return_filepath('test_api', app, out_dir)
+
+        helper_append_contents_to_file((test_api_view.format(
+            Model=M,
+            plural_model=helper_pluralize(M.lower()),
+            nestedEndpoints=models_nestedEndpoints[M],
+            model=M.lower(),
+            validFields=valid,
+            get_foreignkey_objects=models_getForeignkeyObjectExpressions[M],
+            assertNestedObjects=models_assertNestedObjectExpressions[M],
+            isnestedGetSegment=getStr,
+            nestedObject_pks=models_nestedObjectPKs[M],
+            new_fields=newfakedata,
+            assert_nested_object_counts=models_assertNestedObjectCounts[M],
+            isNestedValidSegment=deleteValidStr,
+        )),
+        filepath)
 
 
 def generate_urls_files(models_dict, out_dir):
@@ -358,8 +435,24 @@ def generate_api_files(out_dir):
         serializers = helper_return_filepath('serializers', app, out_dir)
         views       = helper_return_filepath('views', app, out_dir)
 
-        serializers_contents += api_serializers_head.format(djangoapp=app, Models=apps_ImportModels[app])
-        views_contents += api_views_head.format(djangoapp=app, Models=apps_ImportModels[app], Serializers=apps_ImportSerializers[app])
+        exp_extern_models = ""
+        exp_extern_serializers = ""
+
+        if len(  apps_Externmodels[app].values()  ) != 0:
+            exp_extern_models,exp_extern_serializers = build_extern_models_serializers(app, exp_extern_models, exp_extern_serializers)
+
+        serializers_contents += api_serializers_head.format(
+            externModelsSegment=exp_extern_models,
+            externSerializersSegment=exp_extern_serializers,
+            djangoapp=app,
+            Models=apps_ImportModels[app]
+        )
+
+        views_contents += api_views_head.format(
+            djangoapp=app,
+            Models=apps_ImportModels[app],
+            Serializers=apps_ImportSerializers[app]
+        )
 
         for obj in apps_Models[app]:
             exp_nested = ""
@@ -438,6 +531,29 @@ def generate_api_files(out_dir):
 
         helper_append_contents_to_file(serializers_contents, serializers)
         helper_append_contents_to_file(views_contents, views)
+
+
+def generate_admin_file(out_dir, apps_models_dict, models_dict):
+    listOfApps = apps_Models.keys()
+    for app in listOfApps:
+        filepath = helper_return_filepath('admin', app, out_dir)
+        helper_append_contents_to_file(
+            admin_head.format(
+                djangoapp=app,
+                Models=apps_ImportModels[app]
+            ),
+            filepath
+        )
+
+        listOfModels = apps_Models[app]
+        contents = ""
+        for _ in listOfModels:
+            contents += admin_class.format(Model=_,)
+
+        helper_append_contents_to_file(
+            contents,
+            filepath
+        )
 
 
 def generate_test_models_files(out_dir, apps_models_dict, models_dict):
@@ -549,7 +665,8 @@ def generate_test_models_files(out_dir, apps_models_dict, models_dict):
                     setForeigns=exp_setters,
                     model=M.lower(),
                     Model=M,
-                    field=helper_remove_underscore(fld),
+                    field=helper_return_underscore_separated_fieldname(fld),
+                    instance=helper_remove_underscore(fld)
                 )
 
             ####################################################
@@ -573,9 +690,10 @@ def generate_test_models_files(out_dir, apps_models_dict, models_dict):
                 if field_type == 'UUIDField':
                     ufield = f
 
-                exp_attrs += test_models_set_attr.format(
-                    attr=f
-                )
+                if field_type != 'UUIDField':
+                    exp_attrs += test_models_set_attr.format(
+                        attr=f
+                    )
 
                 exp_fieldtests += test_models_test_field.format(
                     model=M.lower(),
@@ -703,7 +821,7 @@ def generate_models(out_dir, app_name_list, filepath_dict, djangoapps_inputfiles
                 if djangofield == 'models.Model':
                     model_name = fieldname
 
-                    build_docstring_collection(models_docstrings, model_name, docstring)
+                    add_to_docstring_collection(models_docstrings, model_name, docstring)
 
                     save_to_foreignkey_Model_collection(foreignkeynames_models, model_name)
 
@@ -758,6 +876,8 @@ def generate_code(output_dir, *djangoapps_inputfiles):
 
     build_dict_apps_Models(django_model_objects)
 
+    build_dict_apps_Externmodels(django_model_objects, apps_Models)
+
     set_up_import_statements(apps_Models)
 
     build_dict_apps_ViewSets(apps_Models)
@@ -767,6 +887,8 @@ def generate_code(output_dir, *djangoapps_inputfiles):
     generate_models_files(output_dir, apps_Models, django_model_objects)
 
     generate_test_models_files(output_dir, apps_Models, django_model_objects)
+
+    generate_admin_file(output_dir, apps_Models, django_model_objects)
 
     generate_urls_files(django_model_objects, output_dir)
 

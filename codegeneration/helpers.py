@@ -8,6 +8,10 @@ Author
     emilledigital@gmail.com
 """
 
+def helper_reverse(unique_values_dict):
+    return {v: k for k, v in unique_values_dict.items()}
+
+
 def helper_remove_underscore(inp):
     if '_' in inp:
         return ''.join(inp.split('_'))

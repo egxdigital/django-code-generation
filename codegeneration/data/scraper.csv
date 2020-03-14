@@ -9,7 +9,7 @@ UUIDField,listingtag_id,,,Primary Key
 CharField,listingtag_name,,,String
 models.Model,Scrape,A scrape is an automated session wherein the database is either populated or not.,,Entity
 UUIDField,scrape_id,,,Primary Key
-DateField,scrape_date,,,Date
+DateTimeField,scrape_datetime,,,Date
 IntegerField,entries_scraped,,,Integer
 DurationField,scrape_duration,,,Time
 BooleanField,scrape_success,,,Boolean

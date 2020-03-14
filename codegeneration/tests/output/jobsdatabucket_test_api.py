@@ -1,16 +1,22 @@
-"""Test API
+"""Test API - jobsdatabucket
+
 This module cointains the test cases for the API views of the jobsdatabucket
 Django application.
 
 Examples
     python manage.py test --pattern="test_*" jobsdatabucket.tests
-
 """
 import pprint, time, pytz, json, datetime
 from django.urls import reverse
-from rest_framework import status
+from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient
+from rest_framework.test import force_authenticate
+from scraper.models import ListingTag, Scrape
+from jobsdatastore.models import Company, Technology
+from scraper.api.serializers import ListingTagSerializer, ScrapeSerializer
+from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 from jobsdatabucket.api.serializers import JobPostSerializer, JobPostCompanySerializer, JobPostListingTagSerializer, JobPostScrapeSerializer, JobPostTechnologySerializer
 from jobsdatabucket.api.views import JobPostViewSet, JobPostCompanyViewSet, JobPostListingTagViewSet, JobPostScrapeViewSet, JobPostTechnologyViewSet
@@ -44,7 +50,8 @@ class TestJobPostAPIView(APITestCase):
     def test_get_single_jobpost(self):
         post_response = self.client.post(self.url, self.valid_jobpost, format='json', HTTP_AUTHORIZATION=self.token)
 
-        instance = JobPost.objects.get(<field>='<value>')
+        valid_value = self.valid_jobpost['<attr>']
+        instance = JobPost.objects.get(<field>=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
@@ -56,7 +63,8 @@ class TestJobPostAPIView(APITestCase):
 
     def test_update_jobpost(self):
         post = self.client.post(self.url, self.valid_jobpost, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobPost.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobpost['<attr>']
+        self.assertEqual(JobPost.objects.get().<attr>, before_valid_value)
 
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
 
@@ -74,14 +82,16 @@ class TestJobPostAPIView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(JobPost.objects.count(), 1)
-        self.assertEqual(JobPost.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobPost.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobpost(self):
         post = self.client.post(self.url, self.valid_jobpost, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobPost.objects.count(), 1)
 
-        instance = JobPost.objects.get(<nestedObject>=<value>)
+        valid_value = self.valid_jobpost['<attr>']
+        instance = JobPost.objects.get(<attr>=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobPost.objects.count(), 0)
@@ -115,12 +125,12 @@ class TestJobPostCompanyAPIView(APITestCase):
 
     def test_create_jobpostcompany(self):
         response = self.client.post(self.url, self.valid_jobpostcompany, format='json', HTTP_AUTHORIZATION=self.token)
-        job_post = str(JobPostCompany.objects.get().job_post)
+        jobpost = str(JobPostCompany.objects.get().job_post)
         company = str(JobPostCompany.objects.get().company)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(JobPostCompany.objects.count(), 1)
-        self.assertEqual(job_post, '<model __str__ value>')
+        self.assertEqual(jobpost, '<model __str__ value>')
         self.assertEqual(company, '<model __str__ value>')
 
     def test_get_single_jobpostcompany(self):
@@ -128,11 +138,12 @@ class TestJobPostCompanyAPIView(APITestCase):
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         company_pk = str(Company.objects.get().company_id)
 
-        instance = JobPostCompany.objects.get(<field>='<value>')
+        valid_value = jobpost_pk
+        instance = JobPostCompany.objects.get(job_post=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, job_post=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -140,7 +151,8 @@ class TestJobPostCompanyAPIView(APITestCase):
 
     def test_update_jobpostcompany(self):
         post = self.client.post(self.url, self.valid_jobpostcompany, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobPostCompany.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobpostcompany['<attr>']
+        self.assertEqual(JobPostCompany.objects.get().<attr>, before_valid_value)
 
         jobpostcompany_pk = str(JobPostCompany.objects.get().jobpostcompany_id)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
@@ -169,16 +181,18 @@ class TestJobPostCompanyAPIView(APITestCase):
         self.assertEqual(JobPost.objects.count(), 1)
         self.assertEqual(Company.objects.count(), 1)
         self.assertEqual(JobPostCompany.objects.count(), 1)
-        self.assertEqual(JobPostCompany.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobPostCompany.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobpostcompany(self):
         post = self.client.post(self.url, self.valid_jobpostcompany, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobPostCompany.objects.count(), 1)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         company_pk = str(Company.objects.get().company_id)
 
-        instance = JobPostCompany.objects.get(<nestedObject>=<value>)
+        valid_value = jobpost_pk
+        instance = JobPostCompany.objects.get(job_post=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'job_post':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobPostCompany.objects.count(), 0)
@@ -211,24 +225,25 @@ class TestJobPostListingTagAPIView(APITestCase):
 
     def test_create_jobpostlistingtag(self):
         response = self.client.post(self.url, self.valid_jobpostlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
-        job_post = str(JobPostListingTag.objects.get().job_post)
-        listing_tag = str(JobPostListingTag.objects.get().listing_tag)
+        jobpost = str(JobPostListingTag.objects.get().job_post)
+        listingtag = str(JobPostListingTag.objects.get().listing_tag)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(JobPostListingTag.objects.count(), 1)
-        self.assertEqual(job_post, '<model __str__ value>')
-        self.assertEqual(listing_tag, '<model __str__ value>')
+        self.assertEqual(jobpost, '<model __str__ value>')
+        self.assertEqual(listingtag, '<model __str__ value>')
 
     def test_get_single_jobpostlistingtag(self):
         post_response = self.client.post(self.url, self.valid_jobpostlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         listingtag_pk = str(ListingTag.objects.get().listingtag_id)
 
-        instance = JobPostListingTag.objects.get(<field>='<value>')
+        valid_value = jobpost_pk
+        instance = JobPostListingTag.objects.get(job_post=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, job_post=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -236,7 +251,8 @@ class TestJobPostListingTagAPIView(APITestCase):
 
     def test_update_jobpostlistingtag(self):
         post = self.client.post(self.url, self.valid_jobpostlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobPostListingTag.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobpostlistingtag['<attr>']
+        self.assertEqual(JobPostListingTag.objects.get().<attr>, before_valid_value)
 
         jobpostlistingtag_pk = str(JobPostListingTag.objects.get().jobpostlistingtag_id)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
@@ -264,16 +280,18 @@ class TestJobPostListingTagAPIView(APITestCase):
         self.assertEqual(JobPost.objects.count(), 1)
         self.assertEqual(ListingTag.objects.count(), 1)
         self.assertEqual(JobPostListingTag.objects.count(), 1)
-        self.assertEqual(JobPostListingTag.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobPostListingTag.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobpostlistingtag(self):
         post = self.client.post(self.url, self.valid_jobpostlistingtag, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobPostListingTag.objects.count(), 1)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         listingtag_pk = str(ListingTag.objects.get().listingtag_id)
 
-        instance = JobPostListingTag.objects.get(<nestedObject>=<value>)
+        valid_value = jobpost_pk
+        instance = JobPostListingTag.objects.get(job_post=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'job_post':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobPostListingTag.objects.count(), 0)
@@ -300,7 +318,7 @@ class TestJobPostScrapeAPIView(APITestCase):
                 "job_description":"CharField",
                },
             "scrape":{                
-                "scrape_date":"DateField",
+                "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
@@ -309,12 +327,12 @@ class TestJobPostScrapeAPIView(APITestCase):
 
     def test_create_jobpostscrape(self):
         response = self.client.post(self.url, self.valid_jobpostscrape, format='json', HTTP_AUTHORIZATION=self.token)
-        job_post = str(JobPostScrape.objects.get().job_post)
+        jobpost = str(JobPostScrape.objects.get().job_post)
         scrape = str(JobPostScrape.objects.get().scrape)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(JobPostScrape.objects.count(), 1)
-        self.assertEqual(job_post, '<model __str__ value>')
+        self.assertEqual(jobpost, '<model __str__ value>')
         self.assertEqual(scrape, '<model __str__ value>')
 
     def test_get_single_jobpostscrape(self):
@@ -322,11 +340,12 @@ class TestJobPostScrapeAPIView(APITestCase):
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         scrape_pk = str(Scrape.objects.get().scrape_id)
 
-        instance = JobPostScrape.objects.get(<field>='<value>')
+        valid_value = jobpost_pk
+        instance = JobPostScrape.objects.get(job_post=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, job_post=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -334,7 +353,8 @@ class TestJobPostScrapeAPIView(APITestCase):
 
     def test_update_jobpostscrape(self):
         post = self.client.post(self.url, self.valid_jobpostscrape, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobPostScrape.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobpostscrape['<attr>']
+        self.assertEqual(JobPostScrape.objects.get().<attr>, before_valid_value)
 
         jobpostscrape_pk = str(JobPostScrape.objects.get().jobpostscrape_id)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
@@ -349,7 +369,7 @@ class TestJobPostScrapeAPIView(APITestCase):
                 "job_description":"CharField",
                },
             "scrape":{                
-                "scrape_date":"DateField",
+                "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
@@ -365,16 +385,18 @@ class TestJobPostScrapeAPIView(APITestCase):
         self.assertEqual(JobPost.objects.count(), 1)
         self.assertEqual(Scrape.objects.count(), 1)
         self.assertEqual(JobPostScrape.objects.count(), 1)
-        self.assertEqual(JobPostScrape.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobPostScrape.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobpostscrape(self):
         post = self.client.post(self.url, self.valid_jobpostscrape, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobPostScrape.objects.count(), 1)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         scrape_pk = str(Scrape.objects.get().scrape_id)
 
-        instance = JobPostScrape.objects.get(<nestedObject>=<value>)
+        valid_value = jobpost_pk
+        instance = JobPostScrape.objects.get(job_post=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'job_post':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobPostScrape.objects.count(), 0)
@@ -407,12 +429,12 @@ class TestJobPostTechnologyAPIView(APITestCase):
 
     def test_create_jobposttechnology(self):
         response = self.client.post(self.url, self.valid_jobposttechnology, format='json', HTTP_AUTHORIZATION=self.token)
-        job_post = str(JobPostTechnology.objects.get().job_post)
+        jobpost = str(JobPostTechnology.objects.get().job_post)
         technology = str(JobPostTechnology.objects.get().technology)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(JobPostTechnology.objects.count(), 1)
-        self.assertEqual(job_post, '<model __str__ value>')
+        self.assertEqual(jobpost, '<model __str__ value>')
         self.assertEqual(technology, '<model __str__ value>')
 
     def test_get_single_jobposttechnology(self):
@@ -420,11 +442,12 @@ class TestJobPostTechnologyAPIView(APITestCase):
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         technology_pk = str(Technology.objects.get().technology_id)
 
-        instance = JobPostTechnology.objects.get(<field>='<value>')
+        valid_value = jobpost_pk
+        instance = JobPostTechnology.objects.get(job_post=valid_value)
 
         request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)
         force_authenticate(request, user=self.user)
-        response = self.view(request, <field>=instance.<field>)
+        response = self.view(request, job_post=instance.pk)
         response.render()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -432,7 +455,8 @@ class TestJobPostTechnologyAPIView(APITestCase):
 
     def test_update_jobposttechnology(self):
         post = self.client.post(self.url, self.valid_jobposttechnology, format='json', HTTP_AUTHORIZATION=self.token)
-        self.assertEqual(JobPostTechnology.objects.get().<field>.<attr>, "<before_value>")
+        before_valid_value = self.valid_jobposttechnology['<attr>']
+        self.assertEqual(JobPostTechnology.objects.get().<attr>, before_valid_value)
 
         jobposttechnology_pk = str(JobPostTechnology.objects.get().jobposttechnology_id)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
@@ -460,16 +484,18 @@ class TestJobPostTechnologyAPIView(APITestCase):
         self.assertEqual(JobPost.objects.count(), 1)
         self.assertEqual(Technology.objects.count(), 1)
         self.assertEqual(JobPostTechnology.objects.count(), 1)
-        self.assertEqual(JobPostTechnology.objects.get().<field>.<attr>, "<after value>")
+        self.assertEqual(JobPostTechnology.objects.get().<attr>, data['<attr_after>'])
 
     def test_delete_jobposttechnology(self):
         post = self.client.post(self.url, self.valid_jobposttechnology, format='json', HTTP_AUTHORIZATION=self.token)
+        self.assertEqual(JobPostTechnology.objects.count(), 1)
         jobpost_pk = str(JobPost.objects.get().jobpost_id)
         technology_pk = str(Technology.objects.get().technology_id)
 
-        instance = JobPostTechnology.objects.get(<nestedObject>=<value>)
+        valid_value = jobpost_pk
+        instance = JobPostTechnology.objects.get(job_post=valid_value)
 
-        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'<field>':'<value>'}, HTTP_AUTHORIZATION=self.token)
+        request = self.client.delete(self.url+str(instance.pk)+'/', kwargs={'job_post':valid_value}, HTTP_AUTHORIZATION=self.token)
 
         self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(JobPostTechnology.objects.count(), 0)

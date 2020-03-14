@@ -32,7 +32,7 @@ class ListingTag(models.Model):
 class Scrape(models.Model):
     """A scrape is an automated session wherein the database is either populated or not."""
     scrape_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    scrape_date = models.DateField(auto_now=False, auto_now_add=False)
+    scrape_datetime = models.DateTimeField(auto_now=False, auto_now_add=False)
     entries_scraped = models.IntegerField(null=True)
     scrape_duration = models.DurationField(null=True)
     scrape_success = models.BooleanField()

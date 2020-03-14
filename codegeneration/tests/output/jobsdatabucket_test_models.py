@@ -1,10 +1,15 @@
 """Test Models - jobsdatabucket
 
 This module contains the tests for the jobsdatabucket models.
+
+Example
+    python manage.py test --pattern="test_*" jobsdatabucket.tests.test_models
 """
 import uuid
+import pytz
 import datetime
 from django.db import models
+from django.test import TestCase
 from model_mommy import mommy
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
@@ -20,34 +25,34 @@ class JobPostTestCase(TestCase):
 
         self.instance = mommy.make(
            JobPost,
-           jobpost_id = self.data['jobpost_id']
-           job_title = self.data['job_title']
-           date_posted = self.data['date_posted']
-           apply_link = self.data['apply_link']
-           job_description = self.data['job_description']
+           job_title = self.data['job_title'],
+           date_posted = self.data['date_posted'],
+           apply_link = self.data['apply_link'],
+           job_description = self.data['job_description'],
         )
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, JobPost))
+        thing = JobPost()
+        self.assertTrue(isinstance(thing, JobPost))
 
     def test_fields_jobpost_jobpost_id(self):
-        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        record = JobPost.objects.get(jobpost_id=self.instance.pk)
         self.assertEqual(record.jobpost_id, self.instance.jobpost_id)
 
     def test_fields_jobpost_job_title(self):
-        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        record = JobPost.objects.get(jobpost_id=self.instance.pk)
         self.assertEqual(record.job_title, self.instance.job_title)
 
     def test_fields_jobpost_date_posted(self):
-        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        record = JobPost.objects.get(jobpost_id=self.instance.pk)
         self.assertEqual(record.date_posted, self.instance.date_posted)
 
     def test_fields_jobpost_apply_link(self):
-        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        record = JobPost.objects.get(jobpost_id=self.instance.pk)
         self.assertEqual(record.apply_link, self.instance.apply_link)
 
     def test_fields_jobpost_job_description(self):
-        record = JobPost.objects.get(jobpost_id=self.jobpost.pk)
+        record = JobPost.objects.get(jobpost_id=self.instance.pk)
         self.assertEqual(record.job_description, self.instance.job_description)
 
 
@@ -82,9 +87,10 @@ class JobPostCompanyTestCase(TestCase):
 
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, JobPostCompany))
+        thing = JobPostCompany()
+        self.assertTrue(isinstance(thing, JobPostCompany))
 
-    def test_fields_jobpost(self):
+    def test_fields_job_post(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
         <placeholder> = Company.objects.get(company_id=self.company.pk)
 
@@ -93,8 +99,8 @@ class JobPostCompanyTestCase(TestCase):
         jobpostcompany.company = self.company
         jobpostcompany.save()
 
-        record = JobPostCompany.objects.get(jobpost=<placeholder>)
-        self.assertEqual(record.jobpost, self.jobpost)
+        record = JobPostCompany.objects.get(job_post=<placeholder>)
+        self.assertEqual(record.job_post, self.jobpost)
 
     def test_fields_company(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
@@ -138,9 +144,10 @@ class JobPostListingTagTestCase(TestCase):
 
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, JobPostListingTag))
+        thing = JobPostListingTag()
+        self.assertTrue(isinstance(thing, JobPostListingTag))
 
-    def test_fields_jobpost(self):
+    def test_fields_job_post(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
         <placeholder> = ListingTag.objects.get(listingtag_id=self.listingtag.pk)
 
@@ -149,10 +156,10 @@ class JobPostListingTagTestCase(TestCase):
         jobpostlistingtag.listing_tag = self.listingtag
         jobpostlistingtag.save()
 
-        record = JobPostListingTag.objects.get(jobpost=<placeholder>)
-        self.assertEqual(record.jobpost, self.jobpost)
+        record = JobPostListingTag.objects.get(job_post=<placeholder>)
+        self.assertEqual(record.job_post, self.jobpost)
 
-    def test_fields_listingtag(self):
+    def test_fields_listing_tag(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
         <placeholder> = ListingTag.objects.get(listingtag_id=self.listingtag.pk)
 
@@ -161,8 +168,8 @@ class JobPostListingTagTestCase(TestCase):
         jobpostlistingtag.listing_tag = self.listingtag
         jobpostlistingtag.save()
 
-        record = JobPostListingTag.objects.get(listingtag=<placeholder>)
-        self.assertEqual(record.listingtag, self.listingtag)
+        record = JobPostListingTag.objects.get(listing_tag=<placeholder>)
+        self.assertEqual(record.listing_tag, self.listingtag)
 
 
 class JobPostScrapeTestCase(TestCase):
@@ -175,7 +182,7 @@ class JobPostScrapeTestCase(TestCase):
                 "job_description":"CharField",
                },
             "scrape":{                
-                "scrape_date":"DateField",
+                "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
@@ -191,7 +198,7 @@ class JobPostScrapeTestCase(TestCase):
         self.jobpost.save()
 
         self.scrape = Scrape()
-        self.scrape.scrape_date = self.data['scrape']['scrape_date']
+        self.scrape.scrape_datetime = self.data['scrape']['scrape_datetime']
         self.scrape.entries_scraped = self.data['scrape']['entries_scraped']
         self.scrape.scrape_duration = self.data['scrape']['scrape_duration']
         self.scrape.scrape_success = self.data['scrape']['scrape_success']
@@ -200,9 +207,10 @@ class JobPostScrapeTestCase(TestCase):
 
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, JobPostScrape))
+        thing = JobPostScrape()
+        self.assertTrue(isinstance(thing, JobPostScrape))
 
-    def test_fields_jobpost(self):
+    def test_fields_job_post(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
         <placeholder> = Scrape.objects.get(scrape_id=self.scrape.pk)
 
@@ -211,8 +219,8 @@ class JobPostScrapeTestCase(TestCase):
         jobpostscrape.scrape = self.scrape
         jobpostscrape.save()
 
-        record = JobPostScrape.objects.get(jobpost=<placeholder>)
-        self.assertEqual(record.jobpost, self.jobpost)
+        record = JobPostScrape.objects.get(job_post=<placeholder>)
+        self.assertEqual(record.job_post, self.jobpost)
 
     def test_fields_scrape(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
@@ -256,9 +264,10 @@ class JobPostTechnologyTestCase(TestCase):
 
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, JobPostTechnology))
+        thing = JobPostTechnology()
+        self.assertTrue(isinstance(thing, JobPostTechnology))
 
-    def test_fields_jobpost(self):
+    def test_fields_job_post(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)
         <placeholder> = Technology.objects.get(technology_id=self.technology.pk)
 
@@ -267,8 +276,8 @@ class JobPostTechnologyTestCase(TestCase):
         jobposttechnology.technology = self.technology
         jobposttechnology.save()
 
-        record = JobPostTechnology.objects.get(jobpost=<placeholder>)
-        self.assertEqual(record.jobpost, self.jobpost)
+        record = JobPostTechnology.objects.get(job_post=<placeholder>)
+        self.assertEqual(record.job_post, self.jobpost)
 
     def test_fields_technology(self):
         <placeholder> = JobPost.objects.get(jobpost_id=self.jobpost.pk)

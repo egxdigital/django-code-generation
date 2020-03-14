@@ -1,10 +1,15 @@
 """Test Models - jobsdatastore
 
 This module contains the tests for the jobsdatastore models.
+
+Example
+    python manage.py test --pattern="test_*" jobsdatastore.tests.test_models
 """
 import uuid
+import pytz
 import datetime
 from django.db import models
+from django.test import TestCase
 from model_mommy import mommy
 from jobsdatastore.models import Company, Technology, CompanyTechnology
 
@@ -18,24 +23,24 @@ class CompanyTestCase(TestCase):
 
         self.instance = mommy.make(
            Company,
-           company_id = self.data['company_id']
-           company_name = self.data['company_name']
-           hiring_from = self.data['hiring_from']
+           company_name = self.data['company_name'],
+           hiring_from = self.data['hiring_from'],
         )
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, Company))
+        thing = Company()
+        self.assertTrue(isinstance(thing, Company))
 
     def test_fields_company_company_id(self):
-        record = Company.objects.get(company_id=self.company.pk)
+        record = Company.objects.get(company_id=self.instance.pk)
         self.assertEqual(record.company_id, self.instance.company_id)
 
     def test_fields_company_company_name(self):
-        record = Company.objects.get(company_id=self.company.pk)
+        record = Company.objects.get(company_id=self.instance.pk)
         self.assertEqual(record.company_name, self.instance.company_name)
 
     def test_fields_company_hiring_from(self):
-        record = Company.objects.get(company_id=self.company.pk)
+        record = Company.objects.get(company_id=self.instance.pk)
         self.assertEqual(record.hiring_from, self.instance.hiring_from)
 
 
@@ -47,19 +52,19 @@ class TechnologyTestCase(TestCase):
 
         self.instance = mommy.make(
            Technology,
-           technology_id = self.data['technology_id']
-           technology_name = self.data['technology_name']
+           technology_name = self.data['technology_name'],
         )
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, Technology))
+        thing = Technology()
+        self.assertTrue(isinstance(thing, Technology))
 
     def test_fields_technology_technology_id(self):
-        record = Technology.objects.get(technology_id=self.technology.pk)
+        record = Technology.objects.get(technology_id=self.instance.pk)
         self.assertEqual(record.technology_id, self.instance.technology_id)
 
     def test_fields_technology_technology_name(self):
-        record = Technology.objects.get(technology_id=self.technology.pk)
+        record = Technology.objects.get(technology_id=self.instance.pk)
         self.assertEqual(record.technology_name, self.instance.technology_name)
 
 
@@ -88,7 +93,8 @@ class CompanyTechnologyTestCase(TestCase):
 
 
     def test_is_instance(self):
-        self.assertTrue(isinstance(self.instance, CompanyTechnology))
+        thing = CompanyTechnology()
+        self.assertTrue(isinstance(thing, CompanyTechnology))
 
     def test_fields_company(self):
         <placeholder> = Company.objects.get(company_id=self.company.pk)
