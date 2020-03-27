@@ -55,7 +55,7 @@ class TestCodeGeneration(unittest.TestCase):
         """Tests for the corrrect number of models and files generated"""
 
         self.assertEqual(len(django_model_objects.keys()),13,"Test data contains 13 models across three Django apps")
-        self.assertEqual(len(os.listdir(self.test_output_dir)),18,"Six files should be generated for the three test app csv's")
+        self.assertEqual(len(os.listdir(self.test_output_dir)),21,"21 files should be generated for the three test app csv's")
 
 
     def test_models_isForeignkey(self):

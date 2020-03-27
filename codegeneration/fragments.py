@@ -35,7 +35,7 @@ URLs
 
 admin_head = (
     "\"\"\"Admin - {djangoapp}\n\n"
-    "This module contains the configuration for the Django admin site\n"
+    "This module contains the admin configuration for the Django admin site\n"
     "\"\"\"\n"
     "from django.contrib import admin\n"
     "from {djangoapp}.models import {Models}\n\n"
@@ -151,8 +151,9 @@ api_serializers_head = (
     "\"\"\"Serializers - {djangoapp}\n\n"
     "This module contains the serializers for the {djangoapp} application.\n"
     "\"\"\"\n"
-    "from rest_framework import serializers\n"
     "from django.core.exceptions import ObjectDoesNotExist\n"
+    "from rest_framework import serializers\n"
+    "from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField\n"
     "{externModelsSegment}"
     "{externSerializersSegment}"
     "from {djangoapp}.models import {Models}\n\n"
@@ -163,7 +164,7 @@ api_serializers_nested_object = (
 )
 
 api_serializers_nested_objects = (
-    "class {Model}Serializer(serializers.ModelSerializer):\n"
+    "class {Model}GetSerializer(serializers.ModelSerializer):\n"
     "{nestedObjects}\n"
     "    class Meta:\n"
     "        model = {Model}\n"
@@ -174,7 +175,20 @@ api_serializers = (
     "class {Model}Serializer(serializers.ModelSerializer):\n"
     "    class Meta:\n"
     "        model = {Model}\n"
-    "        fields = '__all__'\n\n"
+    "        fields = '__all__'\n\n\n"
+)
+
+new_api_serializers_primary_key_field = (
+    "    {foreignfield} = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset={Foreignmodel}.objects.all())\n"
+)
+
+new_api_serializers_post_serializer = (
+    "class {Model}PostSerializer(serializers.ModelSerializer):\n"
+    "{primaryKeyFields}"
+    "\n"
+    "    class Meta:\n"
+    "        model = {Model}\n"
+    "        fields = '__all__'\n\n\n"
 )
 
 api_nested_data_pop = (
@@ -234,7 +248,7 @@ api_override_update = (
     "\n"
     "{instanceSaves}"
     "        instance.save()\n"
-    "        return instance\n\n"
+    "        return instance\n\n\n"
 )
 
 api_views_head = (
@@ -249,9 +263,21 @@ api_views_head = (
 )
 
 api_views_model_viewset = (
-    "class {Model}ViewSet(viewsets.ModelViewSet):\n"
+    "\nclass {Model}ViewSet(viewsets.ModelViewSet):\n"
     "    queryset = {Model}.objects.all()\n"
-    "    serializer_class = {Model}Serializer\n\n\n"
+    "    serializer_class = {Model}Serializer\n\n"
+)
+
+api_views_model_nested_viewset = (
+    "\nclass {Model}ViewSet(viewsets.ModelViewSet):\n"
+    "    queryset = {Model}.objects.all()\n\n"
+)
+
+new_api_views_override_get_serializer = (
+    "    def get_serializer_class(self):\n"
+    "        if self.request.method == 'POST':\n"
+    "             return {Model}PostSerializer\n"
+    "        return {Model}GetSerializer\n\n"
 )
 
 
@@ -271,6 +297,8 @@ test_models_head = (
     "import uuid\n"
     "import pytz\n"
     "import datetime\n"
+    "import time\n"
+    "from time import strftime\n"
     "from django.db import models\n"
     "from django.test import TestCase\n"
     "from model_mommy import mommy\n"
@@ -377,6 +405,7 @@ test_api_head = (
     "    python manage.py test --pattern=\"test_*\" {djangoapp}.tests\n"
     "\"\"\"\n"
     "import pprint, time, pytz, json, datetime\n"
+    "from time import strftime\n"
     "from django.urls import reverse\n"
     "from django.contrib.auth.models import User\n"
     "from rest_framework.authtoken.models import Token\n"
@@ -413,7 +442,7 @@ test_api_nested_valid_data = (
     "            \"{nested}\":{{"
     "                {fields}"
     "\n"
-    "               }},\n"
+    "            }},\n"
 )
 
 test_api_updated_json_key = (
@@ -472,8 +501,6 @@ test_api_is_nested_get = (
 )
 
 test_api_is_not_nested_get = (
-    "        valid_value = self.valid_{model}['<attr>']\n"
-    "        instance = {Model}.objects.get(<field>=valid_value)\n\n"
     "        request = self.factory.get(self.url+str(instance.pk), HTTP_AUTHORIZATION=self.token)\n"
     "        force_authenticate(request, user=self.user)\n"
     "        response = self.view(request, <field>=instance.<field>)\n"
@@ -539,71 +566,142 @@ test_api_view = (
     "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )
 
-test_api_list_create = (
-    "class Test{Model}ListCreateAPIView(APITestCase):\n"
-    "    def setUp(self):\n"
-    "        self.factory = APIRequestFactory()\n"
-    "        self.url = reverse('{model}-list')\n"
-    "        \"\"\"<ADD DATA INSTANCES HERE>\"\"\"\n\n"
-    "    def test_create_{models}(self):\n"
-    "        \"\"\"Tests the {model}-list endpoint for the creation of\n"
-    "        a multiple entries using the POST method.\n"
-    "        \"\"\"\n"
-    "        response = self.client.post(self.url,self.<placeholder>,format='json')\n\n"
-    "        self.assertEqual({Model}.objects.count(), 1)\n"
-    "        self.assertEqual(response.status_code, status.HTTP_201_CREATED)\n\n"
-    "    def test_create_{model}(self):\n"
-    "        \"\"\"Tests the {model}-list endpoint for the creation of\n"
-    "        a single entry using the POST method.\n"
-    "        \"\"\"\n"
-    "        response = self.client.post(self.url, self.<placeholder>, format='json')\n\n"
-    "        self.assertEqual(response.status_code, status.HTTP_201_CREATED)\n"
-    "        self.assertEqual({Model}.objects.get().{lookup_field}, self.<placeholder>['{lookup_field}'])\n\n\n"
+
+
+
+
+
+
+
+
+
+
+
+new_test_api_flat_model_json_key_value = (
+    "            \"{field}\":\"{defaultVal}\",\n"
 )
 
-test_api_retrieve_update = (
-    "class Test{Model}RetrieveUpdateDestroyAPIView(APITestCase):\n"
+new_test_api_is_delete_instance = (
+    "        request = self.client.delete(self.url+str(instance.pk)+'/', HTTP_AUTHORIZATION=self.token)\n"
+)
+
+new_test_api_is_not_nested_get = (
+    "        request = self.factory.get(self.url+str(instance.pk))\n"
+    "        force_authenticate(request, user=self.user)\n"
+    "        response = self.view(request, <field>=instance.<>)\n"
+)
+
+new_test_api_is_nested_get = (
+    "        request = self.factory.get(self.url+str(instance.pk))\n"
+    "        force_authenticate(request, user=self.user)\n"
+    "        response = self.view(request, {foreignfield}=instance)\n"
+)
+
+new_test_api_setup_is_not_nested_post = (
+    "        post_response = self.client.post(self.url, self.valid_{model}, format='json', HTTP_AUTHORIZATION=self.token)\n"
+)
+
+new_test_api_setup_is_nested_post = (
+    "        post_response = self.client.post(self.url, data, format='json', HTTP_AUTHORIZATION=self.token)\n"
+)
+
+new_test_api_setup_get_pk = (
+    "        {foreignmodel}_pk = str({ForeignkeyModel}.objects.get().{foreignmodel}_id)\n"
+)
+
+new_test_api_setup_post = (
+    "        resp_{foreignmodel} = self.client.post(self.{foreignmodel}_endpoint, self.valid_{foreignmodel}, format='json', HTTP_AUTHORIZATION=self.token)\n"
+)
+
+new_test_api_nested_valid_data = (
+    "        self.valid_{nested} = {{\n"
+    "{fields}"
+    "        }}\n\n"
+)
+
+new_test_api_valid_model = (
+    "        self.valid_{model} = {{\n"
+    "{validFields}"
+    "        }}\n\n"
+)
+
+new_test_api_setup_data = (
+    "            \"{nested}\":{foreignmodel}_pk,\n"
+)
+
+new_test_api_is_not_nested_setup_segment = (
+    "        post_response = self.client.post(self.url, self.valid_{model}, format='json', HTTP_AUTHORIZATION=self.token)\n"
+    "        self.assertEqual(post_response.status_code, status.HTTP_201_CREATED)\n"
+)
+
+new_test_api_is_nested_setup_segment = (
+    "{postFields}"
+    "\n"
+    "{foreignPKs}"
+    "\n"
+    "        data = {{\n"
+    "{nestedFields}"
+    "        }}\n"
+    "\n"
+    "{postData}"
+    "        self.assertEqual(post_response.status_code, status.HTTP_201_CREATED)\n"
+)
+
+new_test_api_view = (
+    "class Test{Model}APIView(APITestCase):\n"
     "    def setUp(self):\n"
     "        self.factory = APIRequestFactory()\n"
-    "        self.view = {Model}RetrieveUpdateDestroyAPIView.as_view()\n\n"
+    "        self.view = {Model}ViewSet.as_view({{'get': 'list', 'post': 'create', 'put': 'update'}})\n"
+    "        self.url = ('http://127.0.0.1:8000/api/{plural_model}/')\n"
+    "\n"
+    "        self.user = User.objects.create_superuser('admin', 'admin@admin.com', 'admin123')\n"
+    "        self.token = Token.objects.create(user=self.user)\n"
+    "        self.client.force_login(user=self.user)\n"
+    "\n"
+    "{nestedEndpoints}"
+    "\n"
+    "{validModel}"
+    "{foreignFakeData}"
+    "{setupSegment}"
+    "\n"
+    "    def test_create_{model}(self):\n"
+    "{get_foreignkey_objects}"
+    "        self.assertEqual({Model}.objects.count(), 1)\n"
+    "{assertNestedObjects}\n"
     "    def test_get_single_{model}(self):\n"
-    "        \"\"\"Tests the {model}-list endpoint for the retrieval of\n"
-    "        a single entry using the GET method.\n"
-    "        \"\"\"\n"
-    "        post_url = reverse('{model}-list')\n"
-    "        post_request = self.client.post(post_url, self.<placeholder>, format='json')\n"
-    "        a = {Model}.objects.get({lookup_field}='<placeholder>')\n\n"
-    "        request = self.factory.get('{model}-detail')\n"
-    "        response = self.view(request, {lookup_field}=a.{lookup_field})\n"
+    "        instance = {Model}.objects.get()\n"
+    "\n"
+    "{isnestedGetSegment}"
     "        response.render()\n\n"
     "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
-    "        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')\n\n"
+    "        self.assertEqual(response.content.decode('utf-8'), '<placeholder>'.format(instance.pk))\n\n"
     "    def test_update_{model}(self):\n"
-    "        \"\"\"Tests the {model}-detail endpoint for the update of\n"
-    "        a single entry using the PUT method.\n"
-    "        \"\"\"\n"
-    "        post_url = reverse('{model}-list')\n"
-    "        post_request = self.client.post(post_url, self.<placeholder>, format='json')\n\n"
-    "        saved = {Model}.objects.get({lookup_field}=self.<placeholder>['{lookup_field}'])\n"
-    "        edited = <self.instance_edited_{model}>\n\n"
-    "        put_url = reverse('{model}-detail', kwargs=<{lookup_field}: saved.{lookup_field}>)\n"
-    "        response = self.client.put(put_url, edited)\n"
-    "        response_data = json.loads(response.content)\n"
-    "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
-    "        self.assertEqual(response.content.decode('utf-8'), '<PLACEHOLDER STR REPRESENTATION OF DICT>')\n\n"
-    "    def test_delete_{model}(self):\n"
-    "        \"\"\"Tests the {model}-detail endpoint for the deletion of\n"
-    "        a single entry using the DELETE method.\n"
-    "        \"\"\"\n"
-    "        post_url = reverse('{model}-list')\n"
-    "        post_request = self.client.post(post_url, self.<placeholder>, format='json')\n\n"
-    "        a = {Model}.objects.get({lookup_field}=self.<placeholder>['{lookup_field}'])\n\n"
-    "        request = self.factory.delete('{model}-detail')\n"
-    "        response = self.view(request, {lookup_field}=a.{lookup_field})\n"
+    "        self.assertEqual({Model}.objects.get().<attr>, <before_valid_value>)\n\n"
+    "        {model}_pk = str({Model}.objects.get().{model}_id)\n"
+    "{nestedObject_pks}"
+    "\n"
+    "        data = {{\n"
+    "{new_fields}"
+    "        }}\n\n"
+    "        request = self.factory.put('api/{plural_model}/', data, format='json')\n"
+    "        force_authenticate(request, user=self.user)\n"
+    "        response = self.view(request, pk={model}_pk)\n"
     "        response.render()\n\n"
-    "        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)\n"
+    "        self.assertEqual(response.status_code, status.HTTP_200_OK)\n"
+    "{assert_nested_object_counts}"
+    "        self.assertEqual({Model}.objects.count(), 1)\n"
+    "        self.assertEqual({Model}.objects.get().<attr>, data['<attr_after>'])\n\n"
+    "    def test_delete_{model}(self):\n"
+    "        self.assertEqual({Model}.objects.count(), 1)\n"
+    "        instance = {Model}.objects.get()\n"
+    "\n"
+    "{deleteRequest}"
+    "\n"
+    "        self.assertEqual(request.status_code, status.HTTP_204_NO_CONTENT)\n"
     "        self.assertEqual({Model}.objects.count(), 0)\n\n\n"
 )
+
+
 
 if __name__ == '__main__':
     thing = test_models_test_field

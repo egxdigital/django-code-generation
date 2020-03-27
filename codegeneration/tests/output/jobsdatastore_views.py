@@ -7,7 +7,8 @@ from rest_framework import generics, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import authentication_classes, permission_classes
 from jobsdatastore.models import Company, Technology, CompanyTechnology
-from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer, CompanyTechnologySerializer
+from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer, CompanyTechnologyPostSerializer, CompanyTechnologyGetSerializer
+
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
@@ -21,6 +22,9 @@ class TechnologyViewSet(viewsets.ModelViewSet):
 
 class CompanyTechnologyViewSet(viewsets.ModelViewSet):
     queryset = CompanyTechnology.objects.all()
-    serializer_class = CompanyTechnologySerializer
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return CompanyTechnologyPostSerializer
+        return CompanyTechnologyGetSerializer
 

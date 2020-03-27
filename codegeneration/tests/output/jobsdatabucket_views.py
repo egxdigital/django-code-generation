@@ -7,7 +7,8 @@ from rest_framework import generics, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import authentication_classes, permission_classes
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
-from jobsdatabucket.api.serializers import JobPostSerializer, JobPostCompanySerializer, JobPostListingTagSerializer, JobPostScrapeSerializer, JobPostTechnologySerializer
+from jobsdatabucket.api.serializers import JobPostSerializer, JobPostCompanyPostSerializer, JobPostCompanyGetSerializer, JobPostListingTagPostSerializer, JobPostListingTagGetSerializer, JobPostScrapePostSerializer, JobPostScrapeGetSerializer, JobPostTechnologyPostSerializer, JobPostTechnologyGetSerializer
+
 
 class JobPostViewSet(viewsets.ModelViewSet):
     queryset = JobPost.objects.all()
@@ -16,21 +17,36 @@ class JobPostViewSet(viewsets.ModelViewSet):
 
 class JobPostCompanyViewSet(viewsets.ModelViewSet):
     queryset = JobPostCompany.objects.all()
-    serializer_class = JobPostCompanySerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return JobPostCompanyPostSerializer
+        return JobPostCompanyGetSerializer
 
 
 class JobPostListingTagViewSet(viewsets.ModelViewSet):
     queryset = JobPostListingTag.objects.all()
-    serializer_class = JobPostListingTagSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return JobPostListingTagPostSerializer
+        return JobPostListingTagGetSerializer
 
 
 class JobPostScrapeViewSet(viewsets.ModelViewSet):
     queryset = JobPostScrape.objects.all()
-    serializer_class = JobPostScrapeSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return JobPostScrapePostSerializer
+        return JobPostScrapeGetSerializer
 
 
 class JobPostTechnologyViewSet(viewsets.ModelViewSet):
     queryset = JobPostTechnology.objects.all()
-    serializer_class = JobPostTechnologySerializer
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return JobPostTechnologyPostSerializer
+        return JobPostTechnologyGetSerializer
 

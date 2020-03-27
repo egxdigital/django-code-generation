@@ -3,6 +3,7 @@
 This module contains the serializers for the scraper application.
 """
 from rest_framework import serializers
+from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField
 from django.core.exceptions import ObjectDoesNotExist
 from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
 
@@ -11,17 +12,29 @@ class JobBoardSerializer(serializers.ModelSerializer):
         model = JobBoard
         fields = '__all__'
 
+
 class ListingTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListingTag
         fields = '__all__'
+
 
 class ScrapeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scrape
         fields = '__all__'
 
-class ScrapeJobBoardSerializer(serializers.ModelSerializer):
+
+class ScrapeJobBoardPostSerializer(serializers.ModelSerializer):
+    scrape = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=Scrape.objects.all())
+    job_board = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobBoard.objects.all())
+
+    class Meta:
+        model = ScrapeJobBoard
+        fields = '__all__'
+
+
+class ScrapeJobBoardGetSerializer(serializers.ModelSerializer):
     scrape = ScrapeSerializer()
     job_board = JobBoardSerializer()
 
@@ -100,7 +113,17 @@ class ScrapeJobBoardSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class JobBoardListingTagSerializer(serializers.ModelSerializer):
+
+class JobBoardListingTagPostSerializer(serializers.ModelSerializer):
+    job_board = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobBoard.objects.all())
+    listing_tag = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=ListingTag.objects.all())
+
+    class Meta:
+        model = JobBoardListingTag
+        fields = '__all__'
+
+
+class JobBoardListingTagGetSerializer(serializers.ModelSerializer):
     job_board = JobBoardSerializer()
     listing_tag = ListingTagSerializer()
 
@@ -166,4 +189,5 @@ class JobBoardListingTagSerializer(serializers.ModelSerializer):
         listing_tag.save()
         instance.save()
         return instance
+
 

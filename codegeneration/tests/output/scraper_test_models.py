@@ -124,12 +124,12 @@ class ScrapeJobBoardTestCase(TestCase):
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
-               },
+            },
             "job_board":{                
                 "jobboard_name":"CharField",
                 "home_page":"URLField",
                 "search_page":"URLField",
-               },
+            },
         }
 
         self.scrape = Scrape()
@@ -184,10 +184,10 @@ class JobBoardListingTagTestCase(TestCase):
                 "jobboard_name":"CharField",
                 "home_page":"URLField",
                 "search_page":"URLField",
-               },
+            },
             "listing_tag":{                
                 "listingtag_name":"CharField",
-               },
+            },
         }
 
         self.jobboard = JobBoard()

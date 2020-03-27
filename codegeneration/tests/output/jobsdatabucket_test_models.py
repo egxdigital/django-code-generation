@@ -64,11 +64,11 @@ class JobPostCompanyTestCase(TestCase):
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
-               },
+            },
             "company":{                
                 "company_name":"CharField",
                 "hiring_from":"CharField",
-               },
+            },
         }
 
         self.jobpost = JobPost()
@@ -123,10 +123,10 @@ class JobPostListingTagTestCase(TestCase):
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
-               },
+            },
             "listing_tag":{                
                 "listingtag_name":"CharField",
-               },
+            },
         }
 
         self.jobpost = JobPost()
@@ -180,13 +180,13 @@ class JobPostScrapeTestCase(TestCase):
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
-               },
+            },
             "scrape":{                
                 "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
                 "scrape_success":"BooleanField",
-               },
+            },
         }
 
         self.jobpost = JobPost()
@@ -243,10 +243,10 @@ class JobPostTechnologyTestCase(TestCase):
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
-               },
+            },
             "technology":{                
                 "technology_name":"CharField",
-               },
+            },
         }
 
         self.jobpost = JobPost()

@@ -3,11 +3,12 @@
 This module contains the serializers for the jobsdatabucket application.
 """
 from rest_framework import serializers
+from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField
 from django.core.exceptions import ObjectDoesNotExist
-from scraper.models import ListingTag, Scrape
-from jobsdatastore.models import Company, Technology
-from scraper.api.serializers import ListingTagSerializer, ScrapeSerializer
-from jobsdatastore.api.serializers import CompanySerializer, TechnologySerializer
+from jobsdatastore.models import Technology, Company
+from scraper.models import Scrape, ListingTag
+from jobsdatastore.api.serializers import TechnologySerializer, CompanySerializer
+from scraper.api.serializers import ScrapeSerializer, ListingTagSerializer
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
 class JobPostSerializer(serializers.ModelSerializer):
@@ -15,7 +16,17 @@ class JobPostSerializer(serializers.ModelSerializer):
         model = JobPost
         fields = '__all__'
 
-class JobPostCompanySerializer(serializers.ModelSerializer):
+
+class JobPostCompanyPostSerializer(serializers.ModelSerializer):
+    job_post = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobPost.objects.all())
+    company = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=Company.objects.all())
+
+    class Meta:
+        model = JobPostCompany
+        fields = '__all__'
+
+
+class JobPostCompanyGetSerializer(serializers.ModelSerializer):
     job_post = JobPostSerializer()
     company = CompanySerializer()
 
@@ -90,7 +101,17 @@ class JobPostCompanySerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class JobPostListingTagSerializer(serializers.ModelSerializer):
+
+class JobPostListingTagPostSerializer(serializers.ModelSerializer):
+    job_post = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobPost.objects.all())
+    listing_tag = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=ListingTag.objects.all())
+
+    class Meta:
+        model = JobPostListingTag
+        fields = '__all__'
+
+
+class JobPostListingTagGetSerializer(serializers.ModelSerializer):
     job_post = JobPostSerializer()
     listing_tag = ListingTagSerializer()
 
@@ -161,7 +182,17 @@ class JobPostListingTagSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class JobPostScrapeSerializer(serializers.ModelSerializer):
+
+class JobPostScrapePostSerializer(serializers.ModelSerializer):
+    job_post = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobPost.objects.all())
+    scrape = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=Scrape.objects.all())
+
+    class Meta:
+        model = JobPostScrape
+        fields = '__all__'
+
+
+class JobPostScrapeGetSerializer(serializers.ModelSerializer):
     job_post = JobPostSerializer()
     scrape = ScrapeSerializer()
 
@@ -244,7 +275,17 @@ class JobPostScrapeSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class JobPostTechnologySerializer(serializers.ModelSerializer):
+
+class JobPostTechnologyPostSerializer(serializers.ModelSerializer):
+    job_post = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=JobPost.objects.all())
+    technology = PrimaryKeyRelatedField(pk_field=UUIDField(format='hex'), queryset=Technology.objects.all())
+
+    class Meta:
+        model = JobPostTechnology
+        fields = '__all__'
+
+
+class JobPostTechnologyGetSerializer(serializers.ModelSerializer):
     job_post = JobPostSerializer()
     technology = TechnologySerializer()
 
@@ -314,4 +355,5 @@ class JobPostTechnologySerializer(serializers.ModelSerializer):
         technology.save()
         instance.save()
         return instance
+
 

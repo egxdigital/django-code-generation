@@ -7,7 +7,8 @@ from rest_framework import generics, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import authentication_classes, permission_classes
 from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
-from scraper.api.serializers import JobBoardSerializer, ListingTagSerializer, ScrapeSerializer, ScrapeJobBoardSerializer, JobBoardListingTagSerializer
+from scraper.api.serializers import JobBoardSerializer, ListingTagSerializer, ScrapeSerializer, ScrapeJobBoardPostSerializer, ScrapeJobBoardGetSerializer, JobBoardListingTagPostSerializer, JobBoardListingTagGetSerializer
+
 
 class JobBoardViewSet(viewsets.ModelViewSet):
     queryset = JobBoard.objects.all()
@@ -26,11 +27,18 @@ class ScrapeViewSet(viewsets.ModelViewSet):
 
 class ScrapeJobBoardViewSet(viewsets.ModelViewSet):
     queryset = ScrapeJobBoard.objects.all()
-    serializer_class = ScrapeJobBoardSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return ScrapeJobBoardPostSerializer
+        return ScrapeJobBoardGetSerializer
 
 
 class JobBoardListingTagViewSet(viewsets.ModelViewSet):
     queryset = JobBoardListingTag.objects.all()
-    serializer_class = JobBoardListingTagSerializer
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+             return JobBoardListingTagPostSerializer
+        return JobBoardListingTagGetSerializer
 

@@ -74,10 +74,10 @@ class CompanyTechnologyTestCase(TestCase):
             "company":{                
                 "company_name":"CharField",
                 "hiring_from":"CharField",
-               },
+            },
             "technology":{                
                 "technology_name":"CharField",
-               },
+            },
         }
 
         self.company = Company()

@@ -62,10 +62,6 @@ class TestGenerateUrls(unittest.TestCase):
         self.jobsdatastore = ('jobsdatastore', self.src2)
         self.jobsdatabucket = ('jobsdatabucket', self.src3)
 
-        self._prepare_output_directory()
-        dir = self.test_output_dir
-        generate_code(dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
-
     def test_viewset_builder(self):
         for app in apps_Models.keys():
             #print (app)
@@ -83,6 +79,14 @@ class TestGenerateUrls(unittest.TestCase):
         generate_code(dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
         generate_models_files(self.test_output_dir, apps_Models, django_model_objects)
         generate_test_models_files(self.test_output_dir, apps_Models, django_model_objects)
+
+    def test_build_dict_app_externmodels(self):
+        self._prepare_output_directory()
+        dir = self.test_output_dir
+        generate_code(dir, *[self.scraper, self.jobsdatastore, self.jobsdatabucket])
+        build_dict_apps_Externmodels(django_model_objects, apps_Models)
+        pprint.pprint(apps_Externmodels)
+        print (list(apps_Externmodels.keys()))
 
 if __name__ == '__main__':
     unittest.main()
