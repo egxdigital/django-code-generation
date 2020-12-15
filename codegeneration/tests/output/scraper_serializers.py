@@ -2,9 +2,9 @@
 
 This module contains the serializers for the scraper application.
 """
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField
-from django.core.exceptions import ObjectDoesNotExist
 from scraper.models import JobBoard, ListingTag, Scrape, ScrapeJobBoard, JobBoardListingTag
 
 class JobBoardSerializer(serializers.ModelSerializer):

@@ -7,6 +7,7 @@ Examples
     python manage.py test --pattern="test_*" scraper.tests
 """
 import pprint, time, pytz, json, datetime
+from time import strftime
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token

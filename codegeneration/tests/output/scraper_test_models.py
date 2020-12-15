@@ -8,6 +8,8 @@ Example
 import uuid
 import pytz
 import datetime
+import time
+from time import strftime
 from django.db import models
 from django.test import TestCase
 from model_mommy import mommy

@@ -1,6 +1,6 @@
 """Admin - jobsdatastore
 
-This module contains the configuration for the Django admin site
+This module contains the admin configuration for the Django admin site
 """
 from django.contrib import admin
 from jobsdatastore.models import Company, Technology, CompanyTechnology

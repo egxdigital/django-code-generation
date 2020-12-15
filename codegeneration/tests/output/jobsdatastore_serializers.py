@@ -2,9 +2,9 @@
 
 This module contains the serializers for the jobsdatastore application.
 """
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField
-from django.core.exceptions import ObjectDoesNotExist
 from jobsdatastore.models import Company, Technology, CompanyTechnology
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -90,3 +90,5 @@ class CompanyTechnologyGetSerializer(serializers.ModelSerializer):
         technology.save()
         instance.save()
         return instance
+
+

@@ -302,7 +302,8 @@ test_models_head = (
     "from django.db import models\n"
     "from django.test import TestCase\n"
     "from model_mommy import mommy\n"
-    "from {djangoapp}.models import {Models}\n\n"
+    "from {djangoapp}.models import {Models}\n"
+    "{externModelsSegment}\n"
 )
 
 test_models_test_field = (

@@ -1,6 +1,6 @@
 """Admin - jobsdatabucket
 
-This module contains the configuration for the Django admin site
+This module contains the admin configuration for the Django admin site
 """
 from django.contrib import admin
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology

@@ -8,9 +8,13 @@ Example
 import uuid
 import pytz
 import datetime
+import time
+from time import strftime
 from django.db import models
 from django.test import TestCase
 from model_mommy import mommy
+from scraper.models import Scrape, ListingTag
+from jobsdatastore.models import Technology, Company
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
 
@@ -59,13 +63,13 @@ class JobPostTestCase(TestCase):
 class JobPostCompanyTestCase(TestCase):
     def setUp (self):
         self.data = {
-            "job_post":{                
+            "job_post":{
                 "job_title":"CharField",
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
             },
-            "company":{                
+            "company":{
                 "company_name":"CharField",
                 "hiring_from":"CharField",
             },
@@ -118,13 +122,13 @@ class JobPostCompanyTestCase(TestCase):
 class JobPostListingTagTestCase(TestCase):
     def setUp (self):
         self.data = {
-            "job_post":{                
+            "job_post":{
                 "job_title":"CharField",
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
             },
-            "listing_tag":{                
+            "listing_tag":{
                 "listingtag_name":"CharField",
             },
         }
@@ -175,13 +179,13 @@ class JobPostListingTagTestCase(TestCase):
 class JobPostScrapeTestCase(TestCase):
     def setUp (self):
         self.data = {
-            "job_post":{                
+            "job_post":{
                 "job_title":"CharField",
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
             },
-            "scrape":{                
+            "scrape":{
                 "scrape_datetime":"DateTimeField",
                 "entries_scraped":"IntegerField",
                 "scrape_duration":"DurationField",
@@ -238,13 +242,13 @@ class JobPostScrapeTestCase(TestCase):
 class JobPostTechnologyTestCase(TestCase):
     def setUp (self):
         self.data = {
-            "job_post":{                
+            "job_post":{
                 "job_title":"CharField",
                 "date_posted":"DateField",
                 "apply_link":"URLField",
                 "job_description":"CharField",
             },
-            "technology":{                
+            "technology":{
                 "technology_name":"CharField",
             },
         }
@@ -290,4 +294,3 @@ class JobPostTechnologyTestCase(TestCase):
 
         record = JobPostTechnology.objects.get(technology=<placeholder>)
         self.assertEqual(record.technology, self.technology)
-

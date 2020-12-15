@@ -2,13 +2,13 @@
 
 This module contains the serializers for the jobsdatabucket application.
 """
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.serializers import PrimaryKeyRelatedField, UUIDField
-from django.core.exceptions import ObjectDoesNotExist
-from jobsdatastore.models import Technology, Company
 from scraper.models import Scrape, ListingTag
-from jobsdatastore.api.serializers import TechnologySerializer, CompanySerializer
+from jobsdatastore.models import Technology, Company
 from scraper.api.serializers import ScrapeSerializer, ListingTagSerializer
+from jobsdatastore.api.serializers import TechnologySerializer, CompanySerializer
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 
 class JobPostSerializer(serializers.ModelSerializer):

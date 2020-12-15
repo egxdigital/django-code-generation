@@ -7,16 +7,17 @@ Examples
     python manage.py test --pattern="test_*" jobsdatabucket.tests
 """
 import pprint, time, pytz, json, datetime
+from time import strftime
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory, URLPatternsTestCase, RequestsClient, APIClient
 from rest_framework.test import force_authenticate
-from jobsdatastore.models import Technology, Company
 from scraper.models import Scrape, ListingTag
-from jobsdatastore.api.serializers import TechnologySerializer, CompanySerializer
+from jobsdatastore.models import Technology, Company
 from scraper.api.serializers import ScrapeSerializer, ListingTagSerializer
+from jobsdatastore.api.serializers import TechnologySerializer, CompanySerializer
 from jobsdatabucket.models import JobPost, JobPostCompany, JobPostListingTag, JobPostScrape, JobPostTechnology
 from jobsdatabucket.api.serializers import JobPostSerializer, JobPostCompanyPostSerializer, JobPostCompanyGetSerializer, JobPostListingTagPostSerializer, JobPostListingTagGetSerializer, JobPostScrapePostSerializer, JobPostScrapeGetSerializer, JobPostTechnologyPostSerializer, JobPostTechnologyGetSerializer
 from jobsdatabucket.api.views import JobPostViewSet, JobPostCompanyViewSet, JobPostListingTagViewSet, JobPostScrapeViewSet, JobPostTechnologyViewSet

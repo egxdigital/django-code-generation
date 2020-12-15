@@ -689,10 +689,17 @@ def generate_test_models_files(out_dir, apps_models_dict, models_dict):
     for app in listOfApps:
         filepath = helper_return_filepath('test_models', app, out_dir)
 
+        exp_extern_models = ""
+        exp_extern_serializers = ""
+
+        if len(  apps_Externmodels[app].values()  ) != 0:
+            exp_extern_models, exp_extern_serializers = build_extern_models_serializers(app)
+
         helper_append_contents_to_file(
             test_models_head.format(
                 djangoapp=app,
-                Models=apps_ImportModels[app]
+                Models=apps_ImportModels[app],
+                externModelsSegment=exp_extern_models
             ),
             filepath
         )
